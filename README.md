@@ -1,9 +1,12 @@
 # MyContacts App
 
-A Java-based, console-driven contact management application designed to demonstrate object-oriented design, core Java concepts, and industry-standard design patterns.
+A Java-based console application for contact management, designed using clean, strictly modular Object-Oriented Programming principles.
 
-## Overview
-This application manages user accounts, authentications, and detailed contact lists. It features advanced contact management including grouping, tagging, searching, and filtering capabilities. 
+## Features Implemented
+
+### UC1: User Registration
+* **Secure Registration:** Implemented user creation with strict encapsulation, Regex-based input validation, and SHA-256 password hashing.
+* **Robust Architecture:** Utilized abstract domain models (`FreeUser`/`PremiumUser`) for varied limits and a custom `ContactAppException` for clean error handling.
 
 ## Tech Stack
 * Java
