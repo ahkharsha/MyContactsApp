@@ -3,6 +3,7 @@ package com.mycontactapp.main;
 import com.mycontactapp.auth.Authentication;
 import com.mycontactapp.auth.BasicAuth;
 import com.mycontactapp.auth.OAuth;
+import com.mycontactapp.contact.ContactService;
 import com.mycontactapp.exception.ContactAppException;
 import com.mycontactapp.user.UserService;
 import com.mycontactapp.user.model.User;
@@ -15,12 +16,12 @@ import java.util.Scanner;
  * The main entry point and console user interface for the application.
  *
  * @author Developer
- * @version 1.2
+ * @version 4.0
  */
 public class MyContactsApp {
 
-    // Simple session state management
     private static User loggedInUser = null;
+    private static final ContactService contactService = new ContactService();
 
     public static void main(String[] args) {
         UserService userService = new UserService();
@@ -40,46 +41,118 @@ public class MyContactsApp {
                 String choice = scanner.nextLine();
 
                 switch (choice) {
-                    case "1":
-                        registerFlow(userService, scanner);
+                    case "1": 
+                        registerFlow(userService, scanner); 
                         break;
-                    case "2":
-                        loginFlow(userService, scanner);
+                    case "2": 
+                        loginFlow(userService, scanner); 
                         break;
-                    case "3":
-                        running = false;
-                        System.out.println("Exiting Application. Goodbye!");
+                    case "3": 
+                        running = false; 
+                        System.out.println("Goodbye!"); 
                         break;
-                    default:
-                        System.out.println("Invalid option. Please try again.");
+                    default: 
+                        System.out.println("Invalid option.");
                 }
             } else {
-                // Logged-in Dashboard
-                System.out.println("\n--- Dashboard (Welcome, " + loggedInUser.getFullName() + ") ---");
-                System.out.println("1. Update Profile Name");
-                System.out.println("2. Change Password");
+                System.out.println("\n--- Dashboard (" + loggedInUser.getFullName() + ") ---");
+                System.out.println("1. Manage Profile");
+                System.out.println("2. Add Contact");
                 System.out.println("3. Logout");
                 System.out.print("Choose an option: ");
                 
                 String choice = scanner.nextLine();
-                
                 switch (choice) {
-                    case "1":
-                        updateProfileFlow(userService, scanner);
+                    case "1": 
+                        profileMenu(userService, scanner); 
                         break;
-                    case "2":
-                        changePasswordFlow(userService, scanner);
+                    case "2": 
+                        createContactFlow(scanner); 
                         break;
-                    case "3":
-                        loggedInUser = null;
-                        System.out.println("Logged out successfully.");
+                    case "3": 
+                        loggedInUser = null; 
+                        System.out.println("Logged out."); 
                         break;
-                    default:
-                        System.out.println("Invalid option. Please try again.");
+                    default: 
+                        System.out.println("Invalid option.");
                 }
             }
         }
         scanner.close();
+    }
+
+    private static void profileMenu(UserService userService, Scanner scanner) {
+        System.out.println("\n-- Profile Options --");
+        System.out.println("1. Update Name");
+        System.out.println("2. Change Password");
+        System.out.print("Choose option: ");
+        String choice = scanner.nextLine();
+        
+        if (choice.equals("1")) {
+            System.out.print("Enter new name: ");
+            try {
+                userService.updateUserProfile(loggedInUser, scanner.nextLine());
+                System.out.println("Name updated.");
+            } catch (ContactAppException e) { 
+                System.err.println(e.getMessage()); 
+            }
+        } else if (choice.equals("2")) {
+            changePasswordFlow(userService, scanner);
+        } else {
+            System.out.println("Invalid option.");
+        }
+    }
+
+    /**
+     * Guides the user through creating a new contact (Person or Organization).
+     */
+    private static void createContactFlow(Scanner scanner) {
+        System.out.println("\n-- Add Contact --");
+        System.out.println("1. Add Person");
+        System.out.println("2. Add Organization");
+        System.out.print("Choose contact type: ");
+        String type = scanner.nextLine();
+
+        System.out.print("Name: ");
+        String name = scanner.nextLine();
+        System.out.print("Phone (optional): ");
+        String phone = scanner.nextLine();
+        System.out.print("Email (optional): ");
+        String email = scanner.nextLine();
+
+        try {
+            if (type.equals("1")) {
+                System.out.print("Relationship (e.g. Friend, Brother): ");
+                contactService.createPersonContact(loggedInUser, name, phone, email, scanner.nextLine());
+                System.out.println("Person Contact added successfully!");
+            } else if (type.equals("2")) {
+                System.out.print("Website: ");
+                contactService.createOrganizationContact(loggedInUser, name, phone, email, scanner.nextLine());
+                System.out.println("Organization Contact added successfully!");
+            } else {
+                System.out.println("Invalid type selected.");
+            }
+        } catch (ContactAppException e) {
+            System.err.println("Failed to add contact: " + e.getMessage());
+        }
+    }
+
+    private static void changePasswordFlow(UserService userService, Scanner scanner) {
+        System.out.print("\nEnter your CURRENT password: ");
+        String currentPassword = scanner.nextLine();
+        
+        try {
+            // FIXED: Validating old password immediately before asking for new one
+            userService.verifyCurrentPassword(loggedInUser, currentPassword);
+            
+            System.out.print("Enter your NEW password (min 6 chars): ");
+            String newPassword = scanner.nextLine();
+            
+            userService.changeUserPassword(loggedInUser, newPassword);
+            System.out.println("Password changed successfully!");
+        } catch (ContactAppException e) {
+            System.err.println("Password Change Failed: " + e.getMessage());
+        }
     }
 
     /**
@@ -148,39 +221,6 @@ public class MyContactsApp {
             System.out.println("\nLogin Successful! Welcome back, " + loggedInUser.getFullName() + ".");
         } else {
             System.out.println("\nLogin Failed: Incorrect credentials or unregistered email.");
-        }
-    }
-
-    /**
-     * Asks the user for a new name and saves it.
-     */
-    private static void updateProfileFlow(UserService userService, Scanner scanner) {
-        System.out.print("\nEnter your new full name: ");
-        String newName = scanner.nextLine();
-        
-        try {
-            userService.updateUserProfile(loggedInUser, newName);
-            System.out.println("Profile updated successfully! Your new name is: " + loggedInUser.getFullName());
-        } catch (ContactAppException e) {
-            System.err.println("Update Failed: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Asks for the old password, checks it, and then saves the new password.
-     */
-    private static void changePasswordFlow(UserService userService, Scanner scanner) {
-        System.out.print("\nEnter your CURRENT password: ");
-        String currentPassword = scanner.nextLine();
-        
-        System.out.print("Enter your NEW password (min 6 chars): ");
-        String newPassword = scanner.nextLine();
-        
-        try {
-            userService.changeUserPassword(loggedInUser, currentPassword, newPassword);
-            System.out.println("Password changed successfully!");
-        } catch (ContactAppException e) {
-            System.err.println("Password Change Failed: " + e.getMessage());
         }
     }
 }

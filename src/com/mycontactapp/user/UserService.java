@@ -4,10 +4,10 @@ import com.mycontactapp.exception.ContactAppException;
 import com.mycontactapp.user.model.FreeUser;
 import com.mycontactapp.user.model.PremiumUser;
 import com.mycontactapp.user.model.User;
+import com.mycontactapp.util.FileHandler;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,145 +16,77 @@ import java.util.Optional;
  * Handles user-related tasks like registering new accounts.
  *
  * @author Developer
- * @version 1.0
+ * @version 4.0
  */
 public class UserService {
 
-    // In-memory storage for UC1 until File I/O is integrated
     private final List<User> registeredUsers;
 
-    /**
-     * Constructs a new UserService and initializes the user list.
-     */
     public UserService() {
-        this.registeredUsers = new ArrayList<>();
+        this.registeredUsers = FileHandler.loadUsers(); // Load from file!
     }
 
-    /**
-     * Registers a new user after validating their inputs and hashing their password.
-     *
-     * @param email     The desired email address
-     * @param password  The raw, unhashed password
-     * @param fullName  The user's real name
-     * @param isPremium Boolean flag to determine the account tier
-     * @return The newly created User object
-     * @throws ContactAppException if validation fails or the email is already taken
-     */
     public User registerUser(String email, String password, String fullName, boolean isPremium) throws ContactAppException {
-        if (!UserValidator.isValidEmail(email)) {
-            throw new ContactAppException("Invalid email format provided.");
-        }
-        if (!UserValidator.isValidPassword(password)) {
-            throw new ContactAppException("Password must be at least 6 characters long.");
-        }
-        if (isEmailTaken(email)) {
-            throw new ContactAppException("An account with this email already exists.");
-        }
+        if (!UserValidator.isValidEmail(email)) throw new ContactAppException("Invalid email format provided.");
+        if (!UserValidator.isValidPassword(password)) throw new ContactAppException("Password must be at least 6 characters long.");
+        if (isEmailTaken(email)) throw new ContactAppException("An account with this email already exists.");
 
         String hashedPassword = hashPassword(password);
-        User newUser;
-
-        // Instantiate using standard OOP rather than a Factory Pattern
-        if (isPremium) {
-            newUser = new PremiumUser(email, hashedPassword, fullName);
-        } else {
-            newUser = new FreeUser(email, hashedPassword, fullName);
-        }
+        User newUser = isPremium ? new PremiumUser(email, hashedPassword, fullName) : new FreeUser(email, hashedPassword, fullName);
 
         registeredUsers.add(newUser);
+        FileHandler.saveUsers(registeredUsers); // Save to file!
         return newUser;
     }
 
-    /**
-     * Checks if an email is already registered in the system.
-     * Demonstrates the use of the Java Streams API.
-     *
-     * @param email The email to check
-     * @return true if the email exists, false otherwise
-     */
-    private boolean isEmailTaken(String email) {
-        return registeredUsers.stream()
-                .anyMatch(user -> user.getEmail().equalsIgnoreCase(email));
+    public void updateUserProfile(User user, String newName) throws ContactAppException {
+        if (newName == null || newName.trim().isEmpty()) throw new ContactAppException("Name cannot be null or empty.");
+        user.setFullName(newName);
+        FileHandler.saveUsers(registeredUsers);
     }
 
     /**
-     * Hashes a raw password string securely using SHA-256.
-     *
-     * @param plainTextPassword The raw password
-     * @return The hex-encoded hashed password
-     * @throws ContactAppException if the hashing algorithm is unavailable
+     * Checks if the provided password matches the user's current password.
      */
-    private String hashPassword(String plainTextPassword) throws ContactAppException {
+    public void verifyCurrentPassword(User user, String currentPassword) throws ContactAppException {
+        String hashedCurrent = hashPassword(currentPassword);
+        if (!user.getPasswordHash().equals(hashedCurrent)) {
+            throw new ContactAppException("Security Error: Current password is incorrect.");
+        }
+    }
+
+    /**
+     * Updates the password AFTER it has already been verified.
+     */
+    public void changeUserPassword(User user, String newPassword) throws ContactAppException {
+        if (!UserValidator.isValidPassword(newPassword)) {
+            throw new ContactAppException("New password must be at least 6 characters long.");
+        }
+        user.setPasswordHash(hashPassword(newPassword));
+        FileHandler.saveUsers(registeredUsers); // Save to file!
+    }
+
+    public Optional<User> getUserByEmail(String email) {
+        return registeredUsers.stream().filter(u -> u.getEmail().equalsIgnoreCase(email)).findFirst();
+    }
+
+    private boolean isEmailTaken(String email) {
+        return registeredUsers.stream().anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
+    }
+
+    private String hashPassword(String plainText) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedhash = digest.digest(plainTextPassword.getBytes());
-            StringBuilder hexString = new StringBuilder(2 * encodedhash.length);
-            for (byte b : encodedhash) {
+            byte[] hash = digest.digest(plainText.getBytes());
+            StringBuilder hexString = new StringBuilder(2 * hash.length);
+            for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
+                if (hex.length() == 1) hexString.append('0');
                 hexString.append(hex);
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new ContactAppException("Critical Security Error: Hash algorithm not found.");
+            throw new RuntimeException("Hash algorithm not found.", e);
         }
-    }
-    
-    /**
-     * Retrieves all currently registered users.
-     * * @return A List containing all registered User objects.
-     */
-    public List<User> getRegisteredUsers() {
-        return new ArrayList<>(registeredUsers); // Return a copy to protect internal state
-    }
-    
-    /**
-     * Finds a user by their email address.
-     *
-     * @param email The email to look for
-     * @return The User if found, or nothing if not found
-     */
-    public Optional<User> getUserByEmail(String email) {
-        return registeredUsers.stream()
-                .filter(user -> user.getEmail().equalsIgnoreCase(email))
-                .findFirst();
-    }
-    
-    /**
-     * Updates the name of the logged-in user.
-     *
-     * @param user    The user to update
-     * @param newName The new name to save
-     * @throws ContactAppException if the new name is invalid
-     */
-    public void updateUserProfile(User user, String newName) throws ContactAppException {
-        if (newName == null || newName.trim().isEmpty()) {
-            throw new ContactAppException("Name cannot be null or empty.");
-        }
-        user.setFullName(newName);
-    }
-
-    /**
-     * Changes the user's password securely.
-     * Checks if the old password is correct first.
-     *
-     * @param user            The user who wants to change password
-     * @param currentPassword The password they use now
-     * @param newPassword     The new password they want
-     * @throws ContactAppException if the old password is wrong or the new one is too short
-     */
-    public void changeUserPassword(User user, String currentPassword, String newPassword) throws ContactAppException {
-        String hashedCurrent = hashPassword(currentPassword);
-        
-        if (!user.getPasswordHash().equals(hashedCurrent)) {
-            throw new ContactAppException("Security Error: Current password is incorrect.");
-        }
-        if (!UserValidator.isValidPassword(newPassword)) {
-            throw new ContactAppException("New password must be at least 6 characters long.");
-        }
-        
-        user.setPasswordHash(hashPassword(newPassword));
     }
 }
