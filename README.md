@@ -24,6 +24,10 @@ A Java-based console application for contact management, designed using clean, s
 * **Polymorphic Formatting:** Bypassed complex Decorator patterns by utilizing overridden methods within the `Contact` hierarchy to dynamically generate specific console outputs for `Person` and `Organization` types.
 * **Null Safety:** Integrated `java.util.Optional` to cleanly handle missing multi-value fields (like emails or phones) ensuring a safe, immutable display view without throwing exceptions.
 
+### UC6: Edit Contact
+* **Defensive State Modification:** Implemented safe setter wrappers in the service layer to validate input (e.g., null checks) before allowing mutations to the `Contact` objects, satisfying state protection requirements without relying on complex Memento patterns.
+* **Real-time Synchronization:** Tied all mutation logic directly into the `FileHandler` utility, ensuring that any edits to an object's state in memory are immediately and permanently reflected in the `contacts.txt` storage file.
+
 ## Tech Stack
 * Java
 

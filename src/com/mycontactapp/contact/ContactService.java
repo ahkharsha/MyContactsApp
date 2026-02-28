@@ -9,10 +9,11 @@ import java.util.stream.Collectors;
 
 /**
  * ContactService
- * Manages core contact operations such as creation and data retrieval.
+ * Handles all contact-related tasks, like adding new people or companies.
+ * Now supports updating contact details like name, phone, and email.
  *
  * @author Developer
- * @version 2.0
+ * @version 3.0
  */
 public class ContactService {
     
@@ -45,8 +46,7 @@ public class ContactService {
     }
 
     /**
-     * Retrieves all contacts belonging to a specific user.
-     * Demonstrates use of Java Streams API for filtering.
+     * Finds and returns all contacts created by a specific user.
      *
      * @param owner The user requesting their contacts
      * @return A list of the user's contacts
@@ -62,5 +62,50 @@ public class ContactService {
         if (currentCount >= owner.getContactLimit()) {
             throw new ContactAppException("Contact limit reached for your account type. Upgrade to Premium!");
         }
+    }
+    
+    /**
+     * Updates the name of a contact.
+     *
+     * @param contact The contact to update
+     * @param newName The new name
+     * @throws ContactAppException if name is empty
+     */
+    public void updateContactName(Contact contact, String newName) throws ContactAppException {
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new ContactAppException("Contact name cannot be empty.");
+        }
+        contact.setName(newName);
+        FileHandler.saveContacts(allContacts); // Persist changes
+    }
+
+    /**
+     * Adds a phone number to a contact.
+     *
+     * @param contact  The contact to update
+     * @param newPhone The new phone number
+     * @throws ContactAppException if phone is empty
+     */
+    public void addPhoneToContact(Contact contact, String newPhone) throws ContactAppException {
+        if (newPhone == null || newPhone.trim().isEmpty()) {
+            throw new ContactAppException("Phone number cannot be empty.");
+        }
+        contact.addPhoneNumber(newPhone);
+        FileHandler.saveContacts(allContacts); // Persist changes
+    }
+
+    /**
+     * Adds an email address to a contact.
+     *
+     * @param contact  The contact to update
+     * @param newEmail The new email address
+     * @throws ContactAppException if email is empty
+     */
+    public void addEmailToContact(Contact contact, String newEmail) throws ContactAppException {
+        if (newEmail == null || newEmail.trim().isEmpty()) {
+            throw new ContactAppException("Email address cannot be empty.");
+        }
+        contact.addEmailAddress(newEmail);
+        FileHandler.saveContacts(allContacts); // Persist changes
     }
 }

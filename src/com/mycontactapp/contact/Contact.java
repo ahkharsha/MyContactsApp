@@ -56,8 +56,8 @@ public abstract class Contact {
     public void addEmailAddress(String email) { this.emailAddresses.add(email); }
 
     /**
-     * Generates a cleanly formatted string of the contact's core details.
-     * Demonstrates the use of String formatting and Optional for nullable/empty fields.
+     * Creates a formatted string with all the contact's details.
+     * Nice for displaying the full info to the user.
      *
      * @return Formatted string containing contact details
      */

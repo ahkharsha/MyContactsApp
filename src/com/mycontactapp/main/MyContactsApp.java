@@ -13,10 +13,10 @@ import java.util.Scanner;
 
 /**
  * MyContactsApp
- * The main entry point and console user interface for the application.
+ * This is the main file that runs the application.
  *
  * @author Developer
- * @version 5.0
+ * @version 6.0
  */
 public class MyContactsApp {
 
@@ -58,16 +58,18 @@ public class MyContactsApp {
                 System.out.println("\n--- Dashboard (" + loggedInUser.getFullName() + ") ---");
                 System.out.println("1. Manage Profile");
                 System.out.println("2. Add Contact");
-                System.out.println("3. View Contacts"); // NEW OPTION
-                System.out.println("4. Logout");
+                System.out.println("3. View Contacts");
+                System.out.println("4. Edit Contact"); // NEW OPTION
+                System.out.println("5. Logout");
                 System.out.print("Choose an option: ");
                 
                 String choice = scanner.nextLine();
                 switch (choice) {
                     case "1": profileMenu(userService, scanner); break;
                     case "2": createContactFlow(scanner); break;
-                    case "3": viewContactsFlow(); break; // NEW FLOW
-                    case "4": loggedInUser = null; System.out.println("Logged out."); break;
+                    case "3": viewContactsFlow(); break; 
+                    case "4": editContactFlow(scanner); break; // NEW FLOW
+                    case "5": loggedInUser = null; System.out.println("Logged out."); break;
                     default: System.out.println("Invalid option.");
                 }
             }
@@ -219,7 +221,7 @@ public class MyContactsApp {
     }
     
     /**
-     * Retrieves and displays all contacts for the logged-in user.
+     * Shows a list of all contacts for the current user.
      */
     private static void viewContactsFlow() {
         System.out.println("\n-- My Contacts --");
@@ -232,6 +234,67 @@ public class MyContactsApp {
                 System.out.println("\n[" + (i + 1) + "]");
                 System.out.println(userContacts.get(i).getFormattedDetails());
             }
+        }
+    }
+    
+    /**
+     * Guides the user through editing an existing contact.
+     * Shows a list, asks for selection, and updates the contact.
+     *
+     * @param scanner The console input scanner
+     */
+    private static void editContactFlow(Scanner scanner) {
+        System.out.println("\n-- Edit Contact --");
+        java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
+        
+        if (userContacts.isEmpty()) {
+            System.out.println("You have no contacts to edit.");
+            return;
+        }
+
+        // Display a simplified list for selection
+        for (int i = 0; i < userContacts.size(); i++) {
+            System.out.println("[" + (i + 1) + "] " + userContacts.get(i).getName());
+        }
+
+        System.out.print("\nEnter the number of the contact to edit: ");
+        try {
+            int index = Integer.parseInt(scanner.nextLine()) - 1;
+            if (index < 0 || index >= userContacts.size()) {
+                System.out.println("Invalid selection.");
+                return;
+            }
+
+            com.mycontactapp.contact.Contact selectedContact = userContacts.get(index);
+            
+            System.out.println("\nEditing: " + selectedContact.getName());
+            System.out.println("1. Update Name");
+            System.out.println("2. Add Phone Number");
+            System.out.println("3. Add Email Address");
+            System.out.print("What would you like to update? ");
+            
+            String editChoice = scanner.nextLine();
+            
+            if (editChoice.equals("1")) {
+                System.out.print("Enter new name: ");
+                contactService.updateContactName(selectedContact, scanner.nextLine());
+                System.out.println("Contact name updated.");
+            } else if (editChoice.equals("2")) {
+                System.out.print("Enter new phone number: ");
+                contactService.addPhoneToContact(selectedContact, scanner.nextLine());
+                System.out.println("Phone number added.");
+            } else if (editChoice.equals("3")) {
+                System.out.print("Enter new email address: ");
+                contactService.addEmailToContact(selectedContact, scanner.nextLine());
+                System.out.println("Email address added.");
+            } else {
+                System.out.println("Invalid option.");
+            }
+            
+        } catch (NumberFormatException e) {
+            System.out.println("Please enter a valid number.");
+        } catch (ContactAppException e) {
+            System.err.println("Edit Failed: " + e.getMessage());
         }
     }
 }
