@@ -5,6 +5,7 @@ import com.mycontactapp.auth.BasicAuth;
 import com.mycontactapp.auth.OAuth;
 import com.mycontactapp.contact.ContactService;
 import com.mycontactapp.exception.ContactAppException;
+import com.mycontactapp.search.FilterService;
 import com.mycontactapp.search.SearchFilterService;
 import com.mycontactapp.search.SearchFilterInterface;
 import com.mycontactapp.user.UserService;
@@ -18,13 +19,14 @@ import java.util.Scanner;
  * The main entry point and console user interface for the application.
  *
  * @author Developer
- * @version 9.0
+ * @version 10.0
  */
 public class MyContactsApp {
 
     private static User loggedInUser = null;
     private static final ContactService contactService = new ContactService();
     private static final SearchFilterService searchService = new SearchFilterService();
+    private static final FilterService filterService = new FilterService();
 
     public static void main(String[] args) {
         UserService userService = new UserService();
@@ -57,8 +59,9 @@ public class MyContactsApp {
                 System.out.println("4. Edit Contact");
                 System.out.println("5. Delete Contact");
                 System.out.println("6. Bulk Operations");
-                System.out.println("7. Search Contacts"); // NEW OPTION
-                System.out.println("8. Logout");
+                System.out.println("7. Search Contacts");
+                System.out.println("8. Filter & Sort Contacts"); // NEW OPTION
+                System.out.println("9. Logout");
                 System.out.print("Choose an option: ");
                 
                 String choice = scanner.nextLine();
@@ -69,14 +72,52 @@ public class MyContactsApp {
                     case "4": editContactFlow(scanner); break; 
                     case "5": deleteContactFlow(scanner); break;
                     case "6": bulkOperationsFlow(scanner); break; 
-                    case "7": searchContactsFlow(scanner); break; // NEW FLOW
-                    case "8": loggedInUser = null; System.out.println("Logged out."); break;
+                    case "7": searchContactsFlow(scanner); break; 
+                    case "8": filterContactsFlow(scanner); break; // NEW FLOW
+                    case "9": loggedInUser = null; System.out.println("Logged out."); break;
                     default: System.out.println("Invalid option.");
                 }
             }
         }
         scanner.close();
     }
+
+    private static void filterContactsFlow(Scanner scanner) {
+        System.out.println("\n-- Filter & Sort Contacts --");
+        System.out.println("1. Sort Alphabetically (by Name)");
+        System.out.println("2. Sort by Date Added (Oldest to Newest)");
+        System.out.println("3. Sort by Date Added (Newest to Oldest)");
+        System.out.print("Choose an option: ");
+        String choice = scanner.nextLine();
+
+        java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
+        
+        if (userContacts.isEmpty()) {
+            System.out.println("You have no contacts to sort.");
+            return;
+        }
+
+        java.util.List<com.mycontactapp.contact.Contact> sortedResults;
+        
+        if (choice.equals("1")) {
+            sortedResults = filterService.sortAlphabetically(userContacts);
+        } else if (choice.equals("2")) {
+            sortedResults = filterService.sortByDateAdded(userContacts, true);
+        } else if (choice.equals("3")) {
+            sortedResults = filterService.sortByDateAdded(userContacts, false);
+        } else {
+            System.out.println("Invalid option selected.");
+            return;
+        }
+
+        System.out.println("\nFiltered & Sorted Contacts:");
+        for (int i = 0; i < sortedResults.size(); i++) {
+            System.out.println("\n[" + (i + 1) + "]");
+            System.out.println(sortedResults.get(i).getFormattedDetails());
+        }
+    }
+
+    // --- All previously established methods remain identical below this line ---
 
     private static void searchContactsFlow(Scanner scanner) {
         System.out.println("\n-- Search Contacts --");
@@ -92,29 +133,16 @@ public class MyContactsApp {
         java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
         SearchFilterInterface criteria;
 
-        // Using if-else as requested in the rubric's Java Concepts
-        if (searchType.equals("1")) {
-            criteria = new SearchFilterService.NameSearch();
-        } else if (searchType.equals("2")) {
-            criteria = new SearchFilterService.PhoneSearch();
-        } else if (searchType.equals("3")) {
-            criteria = new SearchFilterService.EmailSearch();
-        } else {
-            System.out.println("Invalid search type selected.");
-            return;
-        }
+        if (searchType.equals("1")) { criteria = new SearchFilterService.NameSearch(); } 
+        else if (searchType.equals("2")) { criteria = new SearchFilterService.PhoneSearch(); } 
+        else if (searchType.equals("3")) { criteria = new SearchFilterService.EmailSearch(); } 
+        else { System.out.println("Invalid search type selected."); return; }
 
         java.util.List<com.mycontactapp.contact.Contact> results = searchService.search(userContacts, query, criteria);
 
         System.out.println("\nSearch Results (" + results.size() + " found):");
-        if (results.isEmpty()) {
-            System.out.println("No contacts match your query.");
-        } else {
-            for (int i = 0; i < results.size(); i++) {
-                System.out.println("\n[" + (i + 1) + "]");
-                System.out.println(results.get(i).getFormattedDetails());
-            }
-        }
+        if (results.isEmpty()) { System.out.println("No contacts match your query."); } 
+        else { for (int i = 0; i < results.size(); i++) { System.out.println("\n[" + (i + 1) + "]"); System.out.println(results.get(i).getFormattedDetails()); } }
     }
 
     private static void bulkOperationsFlow(Scanner scanner) {
@@ -126,16 +154,11 @@ public class MyContactsApp {
 
         java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
 
-        if (userContacts.isEmpty()) {
-            System.out.println("You have no contacts to perform operations on.");
-            return;
-        }
+        if (userContacts.isEmpty()) { System.out.println("You have no contacts to perform operations on."); return; }
 
         if (choice.equals("1")) {
             System.out.println("\nSelect contacts to delete (enter numbers separated by commas, e.g., 1,3,4): ");
-            for (int i = 0; i < userContacts.size(); i++) {
-                System.out.println("[" + (i + 1) + "] " + userContacts.get(i).getName());
-            }
+            for (int i = 0; i < userContacts.size(); i++) { System.out.println("[" + (i + 1) + "] " + userContacts.get(i).getName()); }
             System.out.print("Selection: ");
             String[] selections = scanner.nextLine().split(",");
             
@@ -143,39 +166,26 @@ public class MyContactsApp {
             for (String sel : selections) {
                 try {
                     int index = Integer.parseInt(sel.trim()) - 1;
-                    if (index >= 0 && index < userContacts.size()) {
-                        toDelete.add(userContacts.get(index));
-                    }
-                } catch (NumberFormatException e) {
-                    // Ignore invalid
-                }
+                    if (index >= 0 && index < userContacts.size()) { toDelete.add(userContacts.get(index)); }
+                } catch (NumberFormatException e) { }
             }
             
-            if (toDelete.isEmpty()) {
-                System.out.println("No valid contacts selected.");
-                return;
-            }
-            
+            if (toDelete.isEmpty()) { System.out.println("No valid contacts selected."); return; }
             System.out.print("WARNING: Permanently delete " + toDelete.size() + " contacts? (yes/no): ");
             if (scanner.nextLine().trim().equalsIgnoreCase("yes")) {
                 int deletedCount = contactService.bulkDeleteContacts(toDelete);
                 System.out.println("Successfully deleted " + deletedCount + " contacts.");
-            } else {
-                System.out.println("Bulk deletion cancelled.");
-            }
+            } else { System.out.println("Bulk deletion cancelled."); }
 
         } else if (choice.equals("2")) {
             System.out.print("Enter export filename (e.g., my_contacts.csv): ");
             String filename = scanner.nextLine().trim();
             if (filename.isEmpty()) filename = "exported_contacts.csv";
             
-            boolean success = com.mycontactapp.util.FileHandler.exportContactsToCSV(userContacts, filename);
-            if (success) {
+            if (com.mycontactapp.util.FileHandler.exportContactsToCSV(userContacts, filename)) {
                 System.out.println("Contacts successfully exported to " + filename);
             }
-        } else {
-            System.out.println("Invalid option.");
-        }
+        } else { System.out.println("Invalid option."); }
     }
 
     private static void deleteContactFlow(Scanner scanner) {
@@ -213,17 +223,11 @@ public class MyContactsApp {
             System.out.print("What would you like to update? ");
             String editChoice = scanner.nextLine();
             if (editChoice.equals("1")) {
-                System.out.print("Enter new name: ");
-                contactService.updateContactName(selectedContact, scanner.nextLine());
-                System.out.println("Contact name updated.");
+                System.out.print("Enter new name: "); contactService.updateContactName(selectedContact, scanner.nextLine()); System.out.println("Contact name updated.");
             } else if (editChoice.equals("2")) {
-                System.out.print("Enter new phone number: ");
-                contactService.addPhoneToContact(selectedContact, scanner.nextLine());
-                System.out.println("Phone number added.");
+                System.out.print("Enter new phone number: "); contactService.addPhoneToContact(selectedContact, scanner.nextLine()); System.out.println("Phone number added.");
             } else if (editChoice.equals("3")) {
-                System.out.print("Enter new email address: ");
-                contactService.addEmailToContact(selectedContact, scanner.nextLine());
-                System.out.println("Email address added.");
+                System.out.print("Enter new email address: "); contactService.addEmailToContact(selectedContact, scanner.nextLine()); System.out.println("Email address added.");
             } else { System.out.println("Invalid option."); }
         } catch (NumberFormatException e) { System.out.println("Please enter a valid number."); } catch (ContactAppException e) { System.err.println("Edit Failed: " + e.getMessage()); }
     }
@@ -258,20 +262,15 @@ public class MyContactsApp {
         System.out.print("Email (optional): "); String email = scanner.nextLine();
         try {
             if (type.equals("1")) {
-                System.out.print("Relationship (e.g. Friend, Brother): ");
-                contactService.createPersonContact(loggedInUser, name, phone, email, scanner.nextLine());
-                System.out.println("Person Contact added successfully!");
+                System.out.print("Relationship (e.g. Friend, Brother): "); contactService.createPersonContact(loggedInUser, name, phone, email, scanner.nextLine()); System.out.println("Person Contact added successfully!");
             } else if (type.equals("2")) {
-                System.out.print("Website: ");
-                contactService.createOrganizationContact(loggedInUser, name, phone, email, scanner.nextLine());
-                System.out.println("Organization Contact added successfully!");
+                System.out.print("Website: "); contactService.createOrganizationContact(loggedInUser, name, phone, email, scanner.nextLine()); System.out.println("Organization Contact added successfully!");
             } else { System.out.println("Invalid type selected."); }
         } catch (ContactAppException e) { System.err.println("Failed to add contact: " + e.getMessage()); }
     }
 
     private static void changePasswordFlow(UserService userService, Scanner scanner) {
-        System.out.print("\nEnter your CURRENT password: ");
-        String currentPassword = scanner.nextLine();
+        System.out.print("\nEnter your CURRENT password: "); String currentPassword = scanner.nextLine();
         try {
             userService.verifyCurrentPassword(loggedInUser, currentPassword);
             System.out.print("Enter your NEW password (min 6 chars): ");
