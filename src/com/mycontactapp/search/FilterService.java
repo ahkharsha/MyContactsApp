@@ -19,7 +19,6 @@ public class FilterService {
 
     /**
      * Sorts a list of contacts alphabetically by their name.
-     *
      * @param contacts The original list of contacts
      * @return A newly sorted list
      */
@@ -39,7 +38,6 @@ public class FilterService {
     /**
      * Sorts a list of contacts by the date they were added.
      * Demonstrates conditional sorting logic.
-     *
      * @param contacts  The original list of contacts
      * @param ascending true for Oldest to Newest, false for Newest to Oldest
      * @return A newly sorted list

@@ -16,7 +16,6 @@ public class UserValidator {
 
     /**
      * Validates if the provided string is a properly formatted email address.
-     *
      * @param email The email string to check
      * @return true if the email is valid, false otherwise
      */
@@ -30,7 +29,6 @@ public class UserValidator {
     /**
      * Validates if the password meets minimum security requirements.
      * (e.g., minimum 6 characters).
-     *
      * @param password The raw password string to check
      * @return true if the password is secure, false otherwise
      */

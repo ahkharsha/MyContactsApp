@@ -19,7 +19,7 @@ import java.util.Scanner;
  * The main entry point and console user interface for the application.
  *
  * @author Developer
- * @version 10.0
+ * @version 11.0
  */
 public class MyContactsApp {
 
@@ -28,6 +28,12 @@ public class MyContactsApp {
     private static final SearchFilterService searchService = new SearchFilterService();
     private static final FilterService filterService = new FilterService();
 
+    /**
+     * Main method that drives the console application.
+     * Continuously prompts the user with menu options until exit.
+     *
+     * @param args Command line arguments (not used)
+     */
     public static void main(String[] args) {
         UserService userService = new UserService();
         Scanner scanner = new Scanner(System.in);
@@ -60,8 +66,9 @@ public class MyContactsApp {
                 System.out.println("5. Delete Contact");
                 System.out.println("6. Bulk Operations");
                 System.out.println("7. Search Contacts");
-                System.out.println("8. Filter & Sort Contacts"); // NEW OPTION
-                System.out.println("9. Logout");
+                System.out.println("8. Filter & Sort Contacts");
+                System.out.println("9. Manage Tags"); // NEW OPTION
+                System.out.println("10. Logout");
                 System.out.print("Choose an option: ");
                 
                 String choice = scanner.nextLine();
@@ -73,8 +80,9 @@ public class MyContactsApp {
                     case "5": deleteContactFlow(scanner); break;
                     case "6": bulkOperationsFlow(scanner); break; 
                     case "7": searchContactsFlow(scanner); break; 
-                    case "8": filterContactsFlow(scanner); break; // NEW FLOW
-                    case "9": loggedInUser = null; System.out.println("Logged out."); break;
+                    case "8": filterContactsFlow(scanner); break;
+                    case "9": manageTagsFlow(); break; // NEW FLOW
+                    case "10": loggedInUser = null; System.out.println("Logged out."); break;
                     default: System.out.println("Invalid option.");
                 }
             }
@@ -82,6 +90,29 @@ public class MyContactsApp {
         scanner.close();
     }
 
+    /**
+     * Handles the flow for viewing user's unique tags.
+     */
+    private static void manageTagsFlow() {
+        System.out.println("\n-- Manage Tags --");
+        java.util.Set<com.mycontactapp.tagging.Tag> uniqueTags = contactService.getAllUserTags(loggedInUser);
+        
+        if (uniqueTags.isEmpty()) {
+            System.out.println("You have no tags currently in use.");
+            System.out.println("Create and apply tags to your contacts in the 'Edit Contact' menu!");
+        } else {
+            System.out.println("Your Unique Tags:");
+            for (com.mycontactapp.tagging.Tag tag : uniqueTags) {
+                System.out.println(tag.toString());
+            }
+        }
+    }
+
+    /**
+     * Handles the flow for filtering and sorting contacts.
+     *
+     * @param scanner The scanner to read user input
+     */
     private static void filterContactsFlow(Scanner scanner) {
         System.out.println("\n-- Filter & Sort Contacts --");
         System.out.println("1. Sort Alphabetically (by Name)");
@@ -91,24 +122,14 @@ public class MyContactsApp {
         String choice = scanner.nextLine();
 
         java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
-        
-        if (userContacts.isEmpty()) {
-            System.out.println("You have no contacts to sort.");
-            return;
-        }
+        if (userContacts.isEmpty()) { System.out.println("You have no contacts to sort."); return; }
 
         java.util.List<com.mycontactapp.contact.Contact> sortedResults;
         
-        if (choice.equals("1")) {
-            sortedResults = filterService.sortAlphabetically(userContacts);
-        } else if (choice.equals("2")) {
-            sortedResults = filterService.sortByDateAdded(userContacts, true);
-        } else if (choice.equals("3")) {
-            sortedResults = filterService.sortByDateAdded(userContacts, false);
-        } else {
-            System.out.println("Invalid option selected.");
-            return;
-        }
+        if (choice.equals("1")) sortedResults = filterService.sortAlphabetically(userContacts);
+        else if (choice.equals("2")) sortedResults = filterService.sortByDateAdded(userContacts, true);
+        else if (choice.equals("3")) sortedResults = filterService.sortByDateAdded(userContacts, false);
+        else { System.out.println("Invalid option selected."); return; }
 
         System.out.println("\nFiltered & Sorted Contacts:");
         for (int i = 0; i < sortedResults.size(); i++) {
@@ -117,8 +138,11 @@ public class MyContactsApp {
         }
     }
 
-    // --- All previously established methods remain identical below this line ---
-
+    /**
+     * Handles the flow for searching contacts.
+     *
+     * @param scanner The scanner to read user input
+     */
     private static void searchContactsFlow(Scanner scanner) {
         System.out.println("\n-- Search Contacts --");
         System.out.println("1. Search by Name");
@@ -145,6 +169,11 @@ public class MyContactsApp {
         else { for (int i = 0; i < results.size(); i++) { System.out.println("\n[" + (i + 1) + "]"); System.out.println(results.get(i).getFormattedDetails()); } }
     }
 
+    /**
+     * Handles bulk operations like deleting multiple contacts or exporting data.
+     *
+     * @param scanner The scanner to read user input
+     */
     private static void bulkOperationsFlow(Scanner scanner) {
         System.out.println("\n-- Bulk Operations --");
         System.out.println("1. Bulk Delete Contacts");
@@ -153,7 +182,6 @@ public class MyContactsApp {
         String choice = scanner.nextLine();
 
         java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
-
         if (userContacts.isEmpty()) { System.out.println("You have no contacts to perform operations on."); return; }
 
         if (choice.equals("1")) {
@@ -188,6 +216,11 @@ public class MyContactsApp {
         } else { System.out.println("Invalid option."); }
     }
 
+    /**
+     * Handles the flow for deleting a single contact.
+     *
+     * @param scanner The scanner to read user input
+     */
     private static void deleteContactFlow(Scanner scanner) {
         System.out.println("\n-- Delete Contact --");
         java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
@@ -206,6 +239,11 @@ public class MyContactsApp {
         } catch (NumberFormatException e) { System.out.println("Input Error: Please enter a valid numeric value."); }
     }
 
+    /**
+     * Handles the flow for editing an existing contact's details.
+     *
+     * @param scanner The scanner to read user input
+     */
     private static void editContactFlow(Scanner scanner) {
         System.out.println("\n-- Edit Contact --");
         java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
@@ -232,6 +270,9 @@ public class MyContactsApp {
         } catch (NumberFormatException e) { System.out.println("Please enter a valid number."); } catch (ContactAppException e) { System.err.println("Edit Failed: " + e.getMessage()); }
     }
 
+    /**
+     * Displays all contacts for the logged-in user.
+     */
     private static void viewContactsFlow() {
         System.out.println("\n-- My Contacts --");
         java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
@@ -239,6 +280,12 @@ public class MyContactsApp {
         else { for (int i = 0; i < userContacts.size(); i++) { System.out.println("\n[" + (i + 1) + "]"); System.out.println(userContacts.get(i).getFormattedDetails()); } }
     }
 
+    /**
+     * Handles the user profile management menu.
+     *
+     * @param userService The service for user-related operations
+     * @param scanner     The scanner to read user input
+     */
     private static void profileMenu(UserService userService, Scanner scanner) {
         System.out.println("\n-- Profile Options --");
         System.out.println("1. Update Name");
@@ -251,6 +298,11 @@ public class MyContactsApp {
         } else if (choice.equals("2")) { changePasswordFlow(userService, scanner); } else { System.out.println("Invalid option."); }
     }
 
+    /**
+     * Handles the flow for creating a new contact (Person or Organization).
+     *
+     * @param scanner The scanner to read user input
+     */
     private static void createContactFlow(Scanner scanner) {
         System.out.println("\n-- Add Contact --");
         System.out.println("1. Add Person");
@@ -269,6 +321,12 @@ public class MyContactsApp {
         } catch (ContactAppException e) { System.err.println("Failed to add contact: " + e.getMessage()); }
     }
 
+    /**
+     * Handles the flow for changing the logged-in user's password.
+     *
+     * @param userService The service for user-related operations
+     * @param scanner     The scanner to read user input
+     */
     private static void changePasswordFlow(UserService userService, Scanner scanner) {
         System.out.print("\nEnter your CURRENT password: "); String currentPassword = scanner.nextLine();
         try {
@@ -279,6 +337,12 @@ public class MyContactsApp {
         } catch (ContactAppException e) { System.err.println("Password Change Failed: " + e.getMessage()); }
     }
 
+    /**
+     * Handles the registration of a new user.
+     *
+     * @param userService The service for user-related operations
+     * @param scanner     The scanner to read user input
+     */
     private static void registerFlow(UserService userService, Scanner scanner) {
         try {
             System.out.print("Enter Full Name: "); String name = scanner.nextLine();
@@ -292,6 +356,12 @@ public class MyContactsApp {
         } catch (ContactAppException e) { System.err.println("Registration Failed: " + e.getMessage()); } catch (Exception e) { System.err.println("An unexpected error occurred."); }
     }
 
+    /**
+     * Handles the user login process.
+     *
+     * @param userService The service for user-related operations
+     * @param scanner     The scanner to read user input
+     */
     private static void loginFlow(UserService userService, Scanner scanner) {
         System.out.println("\n--- Login ---");
         System.out.println("1. Standard Login (Email & Password)");

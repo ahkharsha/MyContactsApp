@@ -40,6 +40,10 @@ A Java-based console application for contact management, designed using clean, s
 * **Search Interface:** Implemented a clean `SearchFilterInterface` allowing the application to decouple search logic from iteration loops, adhering to pure OOP encapsulation rather than complicated Specification Patterns.
 * **String Comparison Implementations:** Built individual static classes mapping to Name, Phone, and Email search types, securely utilizing core Java String methods (`equals()`, `toLowerCase()`, `contains()`) combined with nested iteration and conditional filtering logic.
 
+### UC11: Create and Manage Tags
+* **Object Identity & Uniqueness:** Created a custom `Tag` class that strictly overrides `equals()` and `hashCode()` to ensure identical string inputs (e.g., "work" and "Work") are evaluated as the same object in memory.
+* **Collection Modeling:** Integrated a `Set<Tag>` relationship inside the abstract `Contact` model to enforce tag uniqueness per contact, and built a dynamic extraction method in the service layer to pull a master list of unique tags across all user contacts.
+
 ## Tech Stack
 * Java
 

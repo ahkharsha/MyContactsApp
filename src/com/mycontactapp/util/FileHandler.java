@@ -18,21 +18,23 @@ import java.util.List;
  * Utility class for basic file I/O to persist users and contacts to .txt files.
  *
  * @author Developer
- * @version 2.0
+ * @version 3.0
  */
 public class FileHandler {
 
     private static final String DATA_DIR = "data";
     private static final String USERS_FILE = DATA_DIR + "/users.txt";
     private static final String CONTACTS_FILE = DATA_DIR + "/contacts.txt";
-    private static final String DELIMITER = "\\|"; // Using pipe as delimiter
+    private static final String DELIMITER = "\\|"; 
 
     static {
-        new File(DATA_DIR).mkdirs(); // Ensure directory exists
+        new File(DATA_DIR).mkdirs(); 
     }
 
     /**
      * Saves the list of registered users to a text file.
+     * The file format includes user type, ID, email, hashed password, and full name.
+     *
      * @param users The list of users to save
      */
     public static void saveUsers(List<User> users) {
@@ -47,8 +49,10 @@ public class FileHandler {
     }
 
     /**
-     * Loads registered users from the text file.
-     * @return A list of populated User objects
+     * Loads the list of registered users from a text file.
+     * If the file does not exist, an empty list is returned.
+     *
+     * @return A list of User objects (FreeUser or PremiumUser)
      */
     public static List<User> loadUsers() {
         List<User> users = new ArrayList<>();
@@ -74,6 +78,8 @@ public class FileHandler {
 
     /**
      * Saves the list of contacts to a text file.
+     * Handles both Person and Organization types, including their specific fields.
+     *
      * @param contacts The list of contacts to save
      */
     public static void saveContacts(List<Contact> contacts) {
@@ -84,8 +90,10 @@ public class FileHandler {
                 String emails = String.join(",", c.getEmailAddresses());
                 String extra = c instanceof Person ? ((Person) c).getRelationship() : ((Organization) c).getWebsite();
                 
+                String tags = c.getTags().stream().map(com.mycontactapp.tagging.Tag::getName).reduce((t1, t2) -> t1 + "," + t2).orElse("");
+                
                 writer.println(type + "|" + c.getContactId() + "|" + c.getUserId() + "|" + c.getName() + "|" 
-                        + phones + "|" + emails + "|" + c.getCreatedAt().toString() + "|" + extra);
+                        + phones + "|" + emails + "|" + c.getCreatedAt().toString() + "|" + extra + "|" + tags);
             }
         } catch (IOException e) {
             System.err.println("Error saving contacts to file.");
@@ -93,8 +101,10 @@ public class FileHandler {
     }
 
     /**
-     * Loads contacts from the text file.
-     * @return A list of populated Contact objects
+     * Loads the list of contacts from a text file.
+     * Reconstructs complex objects including lists of phones, emails, and tags.
+     *
+     * @return A list of Contact objects
      */
     public static List<Contact> loadContacts() {
         List<Contact> contacts = new ArrayList<>();
@@ -105,16 +115,21 @@ public class FileHandler {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] p = line.split(DELIMITER, -1);
-                if (p.length == 8) {
+                if (p.length >= 8) {
                     List<String> phones = p[4].isEmpty() ? new ArrayList<>() : new ArrayList<>(Arrays.asList(p[4].split(",")));
                     List<String> emails = p[5].isEmpty() ? new ArrayList<>() : new ArrayList<>(Arrays.asList(p[5].split(",")));
                     LocalDateTime createdAt = LocalDateTime.parse(p[6]);
 
-                    if (p[0].equals("Person")) {
-                        contacts.add(new Person(p[1], p[2], p[3], phones, emails, createdAt, p[7]));
-                    } else {
-                        contacts.add(new Organization(p[1], p[2], p[3], phones, emails, createdAt, p[7]));
+                    Contact c = p[0].equals("Person") 
+                        ? new Person(p[1], p[2], p[3], phones, emails, createdAt, p[7])
+                        : new Organization(p[1], p[2], p[3], phones, emails, createdAt, p[7]);
+
+                    if (p.length == 9 && !p[8].isEmpty()) {
+                        for (String tagName : p[8].split(",")) {
+                            c.addTag(new com.mycontactapp.tagging.Tag(tagName));
+                        }
                     }
+                    contacts.add(c);
                 }
             }
         } catch (IOException e) {
@@ -122,18 +137,17 @@ public class FileHandler {
         }
         return contacts;
     }
-    
+
     /**
-     * Exports a list of contacts to a specified CSV file.
-     * Demonstrates basic file handling for export operations.
-     *
+     * Exports the provided list of contacts to a CSV file.
+     * Useful for backing up data or transferring to another application.
      * @param contacts The list of contacts to export
-     * @param filename The desired name/path of the export file
-     * @return true if the export is successful, false otherwise
+     * @param filename The name of the file to save (e.g., "contacts.csv")
+     * @return true if the export was successful, false otherwise
      */
     public static boolean exportContactsToCSV(List<Contact> contacts, String filename) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
-            writer.println("Type,Name,Phones,Emails"); // CSV Header
+            writer.println("Type,Name,Phones,Emails");
             for (Contact c : contacts) {
                 String type = c.getClass().getSimpleName();
                 String phones = String.join(";", c.getPhoneNumbers());
