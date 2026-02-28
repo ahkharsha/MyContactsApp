@@ -5,7 +5,8 @@ import java.util.List;
 
 /**
  * Person
- * Represents an individual contact.
+ * Represents a single person in your contact list.
+ * Includes extra info like how you know them (relationship).
  *
  * @author Developer
  * @version 2.0
@@ -26,6 +27,9 @@ public class Person extends Contact {
     public String getRelationship() { return relationship; }
     public void setRelationship(String relationship) { this.relationship = relationship; }
 
+    /**
+     * Shows all the person's details, plus their relationship to you, in a nice format.
+     */
     @Override
     public String getFormattedDetails() {
         String relationDisplay = (relationship == null || relationship.trim().isEmpty()) ? "N/A" : relationship;

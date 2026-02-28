@@ -18,7 +18,7 @@ import java.util.List;
  * Utility class for basic file I/O to persist users and contacts to .txt files.
  *
  * @author Developer
- * @version 1.0
+ * @version 2.0
  */
 public class FileHandler {
 
@@ -121,5 +121,29 @@ public class FileHandler {
             System.err.println("Error loading contacts.");
         }
         return contacts;
+    }
+    
+    /**
+     * Exports a list of contacts to a specified CSV file.
+     * Demonstrates basic file handling for export operations.
+     *
+     * @param contacts The list of contacts to export
+     * @param filename The desired name/path of the export file
+     * @return true if the export is successful, false otherwise
+     */
+    public static boolean exportContactsToCSV(List<Contact> contacts, String filename) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
+            writer.println("Type,Name,Phones,Emails"); // CSV Header
+            for (Contact c : contacts) {
+                String type = c.getClass().getSimpleName();
+                String phones = String.join(";", c.getPhoneNumbers());
+                String emails = String.join(";", c.getEmailAddresses());
+                writer.println(type + "," + c.getName() + "," + phones + "," + emails);
+            }
+            return true;
+        } catch (IOException e) {
+            System.err.println("Error exporting contacts: " + e.getMessage());
+            return false;
+        }
     }
 }

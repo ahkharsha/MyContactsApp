@@ -16,7 +16,7 @@ import java.util.Scanner;
  * This is the main file that runs the application.
  *
  * @author Developer
- * @version 7.0
+ * @version 8.0
  */
 public class MyContactsApp {
 
@@ -60,8 +60,9 @@ public class MyContactsApp {
                 System.out.println("2. Add Contact");
                 System.out.println("3. View Contacts");
                 System.out.println("4. Edit Contact");
-                System.out.println("5. Delete Contact"); // NEW OPTION
-                System.out.println("6. Logout");
+                System.out.println("5. Delete Contact");
+                System.out.println("6. Bulk Operations"); // NEW OPTION
+                System.out.println("7. Logout");
                 System.out.print("Choose an option: ");
                 
                 String choice = scanner.nextLine();
@@ -70,8 +71,9 @@ public class MyContactsApp {
                     case "2": createContactFlow(scanner); break;
                     case "3": viewContactsFlow(); break; 
                     case "4": editContactFlow(scanner); break; 
-                    case "5": deleteContactFlow(scanner); break; // NEW FLOW
-                    case "6": loggedInUser = null; System.out.println("Logged out."); break;
+                    case "5": deleteContactFlow(scanner); break;
+                    case "6": bulkOperationsFlow(scanner); break; // NEW FLOW
+                    case "7": loggedInUser = null; System.out.println("Logged out."); break;
                     default: System.out.println("Invalid option.");
                 }
             }
@@ -348,6 +350,75 @@ public class MyContactsApp {
             
         } catch (NumberFormatException e) {
             System.out.println("Input Error: Please enter a valid numeric value.");
+        }
+    }
+    
+    /**
+     * Handles the console prompts for bulk actions (Exporting and Deleting).
+     * Demonstrates string splitting, array parsing, and batch processing.
+     *
+     * @param scanner The console input scanner
+     */
+    private static void bulkOperationsFlow(Scanner scanner) {
+        System.out.println("\n-- Bulk Operations --");
+        System.out.println("1. Bulk Delete Contacts");
+        System.out.println("2. Export All Contacts to CSV");
+        System.out.print("Choose an option: ");
+        String choice = scanner.nextLine();
+
+        java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
+
+        if (userContacts.isEmpty()) {
+            System.out.println("You have no contacts to perform operations on.");
+            return;
+        }
+
+        if (choice.equals("1")) {
+            System.out.println("\nSelect contacts to delete (enter numbers separated by commas, e.g., 1,3,4): ");
+            for (int i = 0; i < userContacts.size(); i++) {
+                System.out.println("[" + (i + 1) + "] " + userContacts.get(i).getName());
+            }
+            System.out.print("Selection: ");
+            String[] selections = scanner.nextLine().split(",");
+            
+            java.util.List<com.mycontactapp.contact.Contact> toDelete = new java.util.ArrayList<>();
+            for (String sel : selections) {
+                try {
+                    int index = Integer.parseInt(sel.trim()) - 1;
+                    if (index >= 0 && index < userContacts.size()) {
+                        toDelete.add(userContacts.get(index));
+                    }
+                } catch (NumberFormatException e) {
+                    // Ignore invalid inputs silently for bulk operations
+                }
+            }
+            
+            if (toDelete.isEmpty()) {
+                System.out.println("No valid contacts selected.");
+                return;
+            }
+            
+            System.out.print("WARNING: Permanently delete " + toDelete.size() + " contacts? (yes/no): ");
+            if (scanner.nextLine().trim().equalsIgnoreCase("yes")) {
+                int deletedCount = contactService.bulkDeleteContacts(toDelete);
+                System.out.println("Successfully deleted " + deletedCount + " contacts.");
+            } else {
+                System.out.println("Bulk deletion cancelled.");
+            }
+
+        } else if (choice.equals("2")) {
+            System.out.print("Enter export filename (e.g., my_contacts.csv): ");
+            String filename = scanner.nextLine().trim();
+            if (filename.isEmpty()) {
+                filename = "exported_contacts.csv";
+            }
+            
+            boolean success = com.mycontactapp.util.FileHandler.exportContactsToCSV(userContacts, filename);
+            if (success) {
+                System.out.println("Contacts successfully exported to " + filename);
+            }
+        } else {
+            System.out.println("Invalid option.");
         }
     }
 }

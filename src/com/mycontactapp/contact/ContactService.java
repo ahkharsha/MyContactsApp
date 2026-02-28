@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * Now supports updating contact details like name, phone, and email.
  *
  * @author Developer
- * @version 4.0
+ * @version 5.0
  */
 public class ContactService {
     
@@ -122,5 +122,31 @@ public class ContactService {
             FileHandler.saveContacts(allContacts); // Persist the deletion
         }
         return isRemoved;
+    }
+    
+    /**
+     * Performs a bulk deletion of multiple contacts.
+     * Demonstrates collection operations and standard iteration.
+     *
+     * @param contactsToDelete The list of Contact objects to be removed
+     * @return The number of successfully deleted contacts
+     */
+    public int bulkDeleteContacts(List<Contact> contactsToDelete) {
+        if (contactsToDelete == null || contactsToDelete.isEmpty()) {
+            return 0;
+        }
+        
+        int count = 0;
+        for (Contact c : contactsToDelete) {
+            // remove() returns true if the collection changed
+            if (allContacts.remove(c)) {
+                count++;
+            }
+        }
+        
+        if (count > 0) {
+            FileHandler.saveContacts(allContacts); // Save only once after the batch
+        }
+        return count;
     }
 }

@@ -32,6 +32,10 @@ A Java-based console application for contact management, designed using clean, s
 * **Lifecycle Management:** Implemented a Hard Delete strategy utilizing standard Java Collection `remove()` logic, avoiding the overhead of the Observer Pattern while maintaining strict synchronization with the File I/O system.
 * **Safe Deletion Flow:** Built a dedicated console flow that incorporates explicit user confirmation dialogs and `NumberFormatException` handling to prevent accidental data loss.
 
+### UC8: Bulk Operations
+* **Collection Iteration:** Leveraged standard Java `for` loops and `List` structures to process bulk data operations, dynamically parsing comma-separated string inputs from the user to queue multiple objects for deletion in a single pass.
+* **Data Exporting:** Implemented basic File I/O handling utilizing `FileWriter` and `PrintWriter` to iterate over user contacts and export them cleanly into an external, formatted CSV file.
+
 ## Tech Stack
 * Java
 
