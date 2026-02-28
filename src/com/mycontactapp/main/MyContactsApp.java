@@ -15,7 +15,7 @@ import java.util.Scanner;
  * The main entry point and console user interface for the application.
  *
  * @author Developer
- * @version 1.1
+ * @version 1.2
  */
 public class MyContactsApp {
 
@@ -56,15 +56,26 @@ public class MyContactsApp {
             } else {
                 // Logged-in Dashboard
                 System.out.println("\n--- Dashboard (Welcome, " + loggedInUser.getFullName() + ") ---");
-                System.out.println("1. Logout");
+                System.out.println("1. Update Profile Name");
+                System.out.println("2. Change Password");
+                System.out.println("3. Logout");
                 System.out.print("Choose an option: ");
                 
                 String choice = scanner.nextLine();
-                if (choice.equals("1")) {
-                    loggedInUser = null;
-                    System.out.println("Logged out successfully.");
-                } else {
-                    System.out.println("More features coming soon!");
+                
+                switch (choice) {
+                    case "1":
+                        updateProfileFlow(userService, scanner);
+                        break;
+                    case "2":
+                        changePasswordFlow(userService, scanner);
+                        break;
+                    case "3":
+                        loggedInUser = null;
+                        System.out.println("Logged out successfully.");
+                        break;
+                    default:
+                        System.out.println("Invalid option. Please try again.");
                 }
             }
         }
@@ -73,9 +84,6 @@ public class MyContactsApp {
 
     /**
      * Handles the console prompts for user registration.
-     *
-     * @param userService The service handling business logic
-     * @param scanner     The console input scanner
      */
     private static void registerFlow(UserService userService, Scanner scanner) {
         try {
@@ -105,11 +113,7 @@ public class MyContactsApp {
     }
 
     /**
-     * Handles the user login process.
-     * Asks the user if they want to use Password or Google/GitHub.
-     *
-     * @param userService The service handling business logic
-     * @param scanner     The console input scanner
+     * Handles the console prompts for user authentication demonstrating polymorphism.
      */
     private static void loginFlow(UserService userService, Scanner scanner) {
         System.out.println("\n--- Login ---");
@@ -137,7 +141,6 @@ public class MyContactsApp {
             return;
         }
 
-        // Polymorphic authentication execution
         Optional<User> authResult = authStrategy.authenticate(email, credential);
 
         if (authResult.isPresent()) {
@@ -145,6 +148,39 @@ public class MyContactsApp {
             System.out.println("\nLogin Successful! Welcome back, " + loggedInUser.getFullName() + ".");
         } else {
             System.out.println("\nLogin Failed: Incorrect credentials or unregistered email.");
+        }
+    }
+
+    /**
+     * Asks the user for a new name and saves it.
+     */
+    private static void updateProfileFlow(UserService userService, Scanner scanner) {
+        System.out.print("\nEnter your new full name: ");
+        String newName = scanner.nextLine();
+        
+        try {
+            userService.updateUserProfile(loggedInUser, newName);
+            System.out.println("Profile updated successfully! Your new name is: " + loggedInUser.getFullName());
+        } catch (ContactAppException e) {
+            System.err.println("Update Failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Asks for the old password, checks it, and then saves the new password.
+     */
+    private static void changePasswordFlow(UserService userService, Scanner scanner) {
+        System.out.print("\nEnter your CURRENT password: ");
+        String currentPassword = scanner.nextLine();
+        
+        System.out.print("Enter your NEW password (min 6 chars): ");
+        String newPassword = scanner.nextLine();
+        
+        try {
+            userService.changeUserPassword(loggedInUser, currentPassword, newPassword);
+            System.out.println("Password changed successfully!");
+        } catch (ContactAppException e) {
+            System.err.println("Password Change Failed: " + e.getMessage());
         }
     }
 }

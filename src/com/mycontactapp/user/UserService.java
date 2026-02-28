@@ -111,14 +111,50 @@ public class UserService {
     }
     
     /**
-     * Searches for a registered user by their email address safely.
+     * Finds a user by their email address.
      *
-     * @param email The email to search for
-     * @return An Optional containing the User if found, or empty if not found
+     * @param email The email to look for
+     * @return The User if found, or nothing if not found
      */
     public Optional<User> getUserByEmail(String email) {
         return registeredUsers.stream()
                 .filter(user -> user.getEmail().equalsIgnoreCase(email))
                 .findFirst();
+    }
+    
+    /**
+     * Updates the name of the logged-in user.
+     *
+     * @param user    The user to update
+     * @param newName The new name to save
+     * @throws ContactAppException if the new name is invalid
+     */
+    public void updateUserProfile(User user, String newName) throws ContactAppException {
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new ContactAppException("Name cannot be null or empty.");
+        }
+        user.setFullName(newName);
+    }
+
+    /**
+     * Changes the user's password securely.
+     * Checks if the old password is correct first.
+     *
+     * @param user            The user who wants to change password
+     * @param currentPassword The password they use now
+     * @param newPassword     The new password they want
+     * @throws ContactAppException if the old password is wrong or the new one is too short
+     */
+    public void changeUserPassword(User user, String currentPassword, String newPassword) throws ContactAppException {
+        String hashedCurrent = hashPassword(currentPassword);
+        
+        if (!user.getPasswordHash().equals(hashedCurrent)) {
+            throw new ContactAppException("Security Error: Current password is incorrect.");
+        }
+        if (!UserValidator.isValidPassword(newPassword)) {
+            throw new ContactAppException("New password must be at least 6 characters long.");
+        }
+        
+        user.setPasswordHash(hashPassword(newPassword));
     }
 }

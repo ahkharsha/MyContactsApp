@@ -12,6 +12,10 @@ A Java-based console application for contact management, designed using clean, s
 * **Polymorphic Architecture:** Implemented an `Authentication` interface utilizing standard OOP principles, providing separate, modular implementations for standard logins (`BasicAuth`) and simulated third-party SSO (`OAuth`). 
 * **Safe State Management:** Utilized `java.util.Optional` to safely wrap login queries, protecting the application from `NullPointerExceptions` during invalid login attempts, and established a basic session management loop in the main controller.
 
+### UC3: User Profile Management
+* **State Modification:** Implemented strict setter logic to allow users to update their profile names while preventing invalid states (e.g., null or empty strings).
+* **Security Best Practices:** Created a secure password update flow that actively requires hashing and verifying the current password before allowing state changes to the new password.
+
 ## Tech Stack
 * Java
 
