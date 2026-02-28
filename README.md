@@ -36,6 +36,10 @@ A Java-based console application for contact management, designed using clean, s
 * **Collection Iteration:** Leveraged standard Java `for` loops and `List` structures to process bulk data operations, dynamically parsing comma-separated string inputs from the user to queue multiple objects for deletion in a single pass.
 * **Data Exporting:** Implemented basic File I/O handling utilizing `FileWriter` and `PrintWriter` to iterate over user contacts and export them cleanly into an external, formatted CSV file.
 
+### UC9: Search Contacts
+* **Search Interface:** Implemented a clean `SearchFilterInterface` allowing the application to decouple search logic from iteration loops, adhering to pure OOP encapsulation rather than complicated Specification Patterns.
+* **String Comparison Implementations:** Built individual static classes mapping to Name, Phone, and Email search types, securely utilizing core Java String methods (`equals()`, `toLowerCase()`, `contains()`) combined with nested iteration and conditional filtering logic.
+
 ## Tech Stack
 * Java
 
