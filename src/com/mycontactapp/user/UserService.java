@@ -109,4 +109,16 @@ public class UserService {
     public List<User> getRegisteredUsers() {
         return new ArrayList<>(registeredUsers); // Return a copy to protect internal state
     }
+    
+    /**
+     * Searches for a registered user by their email address safely.
+     *
+     * @param email The email to search for
+     * @return An Optional containing the User if found, or empty if not found
+     */
+    public Optional<User> getUserByEmail(String email) {
+        return registeredUsers.stream()
+                .filter(user -> user.getEmail().equalsIgnoreCase(email))
+                .findFirst();
+    }
 }
