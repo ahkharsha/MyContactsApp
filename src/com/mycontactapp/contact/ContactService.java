@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * Now supports updating contact details like name, phone, and email.
  *
  * @author Developer
- * @version 3.0
+ * @version 4.0
  */
 public class ContactService {
     
@@ -107,5 +107,20 @@ public class ContactService {
         }
         contact.addEmailAddress(newEmail);
         FileHandler.saveContacts(allContacts); // Persist changes
+    }
+    
+    /**
+     * Permanently removes a contact from the system (Hard Delete).
+     * Synchronizes the removal with the persistent storage.
+     *
+     * @param contact The contact to be deleted
+     * @return true if the deletion was successful, false otherwise
+     */
+    public boolean deleteContact(Contact contact) {
+        boolean isRemoved = allContacts.remove(contact);
+        if (isRemoved) {
+            FileHandler.saveContacts(allContacts); // Persist the deletion
+        }
+        return isRemoved;
     }
 }

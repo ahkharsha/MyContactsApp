@@ -16,7 +16,7 @@ import java.util.Scanner;
  * This is the main file that runs the application.
  *
  * @author Developer
- * @version 6.0
+ * @version 7.0
  */
 public class MyContactsApp {
 
@@ -59,8 +59,9 @@ public class MyContactsApp {
                 System.out.println("1. Manage Profile");
                 System.out.println("2. Add Contact");
                 System.out.println("3. View Contacts");
-                System.out.println("4. Edit Contact"); // NEW OPTION
-                System.out.println("5. Logout");
+                System.out.println("4. Edit Contact");
+                System.out.println("5. Delete Contact"); // NEW OPTION
+                System.out.println("6. Logout");
                 System.out.print("Choose an option: ");
                 
                 String choice = scanner.nextLine();
@@ -68,8 +69,9 @@ public class MyContactsApp {
                     case "1": profileMenu(userService, scanner); break;
                     case "2": createContactFlow(scanner); break;
                     case "3": viewContactsFlow(); break; 
-                    case "4": editContactFlow(scanner); break; // NEW FLOW
-                    case "5": loggedInUser = null; System.out.println("Logged out."); break;
+                    case "4": editContactFlow(scanner); break; 
+                    case "5": deleteContactFlow(scanner); break; // NEW FLOW
+                    case "6": loggedInUser = null; System.out.println("Logged out."); break;
                     default: System.out.println("Invalid option.");
                 }
             }
@@ -295,6 +297,57 @@ public class MyContactsApp {
             System.out.println("Please enter a valid number.");
         } catch (ContactAppException e) {
             System.err.println("Edit Failed: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Handles the console prompts for deleting a contact.
+     * Implements a safety confirmation dialog and exception handling for user input.
+     *
+     * @param scanner The console input scanner
+     */
+    private static void deleteContactFlow(Scanner scanner) {
+        System.out.println("\n-- Delete Contact --");
+        java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
+        
+        if (userContacts.isEmpty()) {
+            System.out.println("You have no contacts to delete.");
+            return;
+        }
+
+        // Display a simplified list for selection
+        for (int i = 0; i < userContacts.size(); i++) {
+            System.out.println("[" + (i + 1) + "] " + userContacts.get(i).getName());
+        }
+
+        System.out.print("\nEnter the number of the contact to permanently delete: ");
+        try {
+            int index = Integer.parseInt(scanner.nextLine()) - 1;
+            if (index < 0 || index >= userContacts.size()) {
+                System.out.println("Invalid selection.");
+                return;
+            }
+
+            com.mycontactapp.contact.Contact selectedContact = userContacts.get(index);
+            
+            // Required Confirmation Dialog
+            System.out.print("WARNING: Are you sure you want to permanently delete '" 
+                    + selectedContact.getName() + "'? (yes/no): ");
+            String confirm = scanner.nextLine().trim();
+            
+            if (confirm.equalsIgnoreCase("yes")) {
+                boolean success = contactService.deleteContact(selectedContact);
+                if (success) {
+                    System.out.println("Contact deleted successfully.");
+                } else {
+                    System.out.println("Error: Could not delete the contact.");
+                }
+            } else {
+                System.out.println("Deletion cancelled. The contact is safe.");
+            }
+            
+        } catch (NumberFormatException e) {
+            System.out.println("Input Error: Please enter a valid numeric value.");
         }
     }
 }

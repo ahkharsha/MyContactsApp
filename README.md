@@ -28,6 +28,10 @@ A Java-based console application for contact management, designed using clean, s
 * **Defensive State Modification:** Implemented safe setter wrappers in the service layer to validate input (e.g., null checks) before allowing mutations to the `Contact` objects, satisfying state protection requirements without relying on complex Memento patterns.
 * **Real-time Synchronization:** Tied all mutation logic directly into the `FileHandler` utility, ensuring that any edits to an object's state in memory are immediately and permanently reflected in the `contacts.txt` storage file.
 
+### UC7: Delete Contact
+* **Lifecycle Management:** Implemented a Hard Delete strategy utilizing standard Java Collection `remove()` logic, avoiding the overhead of the Observer Pattern while maintaining strict synchronization with the File I/O system.
+* **Safe Deletion Flow:** Built a dedicated console flow that incorporates explicit user confirmation dialogs and `NumberFormatException` handling to prevent accidental data loss.
+
 ## Tech Stack
 * Java
 
