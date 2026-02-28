@@ -20,6 +20,10 @@ A Java-based console application for contact management, designed using clean, s
 * **Polymorphic Data Models:** Designed a hierarchical model containing an abstract `Contact` base class extended by `Person` and `Organization`, leveraging collections to store multi-value data like phone numbers and emails.
 * **Data Persistence:** Implemented a robust `FileHandler` utility to securely read and write Application state (Users and Contacts) to text files, enabling long-term storage and eliminating the need for repeated manual logins during testing.
 
+### UC5: View Contact Details
+* **Polymorphic Formatting:** Bypassed complex Decorator patterns by utilizing overridden methods within the `Contact` hierarchy to dynamically generate specific console outputs for `Person` and `Organization` types.
+* **Null Safety:** Integrated `java.util.Optional` to cleanly handle missing multi-value fields (like emails or phones) ensuring a safe, immutable display view without throwing exceptions.
+
 ## Tech Stack
 * Java
 

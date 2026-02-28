@@ -5,38 +5,23 @@ import com.mycontactapp.user.model.User;
 import com.mycontactapp.util.FileHandler;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * ContactService
- * Handles all contact-related tasks, like adding new people or companies.
+ * Manages core contact operations such as creation and data retrieval.
  *
  * @author Developer
- * @version 1.0
+ * @version 2.0
  */
 public class ContactService {
     
     private final List<Contact> allContacts;
 
-    /**
-     * Constructs a new ContactService.
-     * Loads existing contacts from the file system.
-     */
     public ContactService() {
-        // Automatically load contacts from text file on startup
         this.allContacts = FileHandler.loadContacts();
     }
 
-    /**
-     * Creates and saves a new Person contact.
-     *
-     * @param owner        The user adding the contact
-     * @param name         The contact's name
-     * @param phone        The contact's phone number
-     * @param email        The contact's email address
-     * @param relationship The relationship to the user (e.g., Friend)
-     * @return The created Person object
-     * @throws ContactAppException if logic fails (e.g., limit reached)
-     */
     public Person createPersonContact(User owner, String name, String phone, String email, String relationship) throws ContactAppException {
         enforceContactLimit(owner);
         Person person = new Person(owner.getUserId(), name, relationship);
@@ -44,21 +29,10 @@ public class ContactService {
         if (!email.isEmpty()) person.addEmailAddress(email);
         
         allContacts.add(person);
-        FileHandler.saveContacts(allContacts); // Persist to file
+        FileHandler.saveContacts(allContacts); 
         return person;
     }
 
-    /**
-     * Creates and saves a new Organization contact.
-     *
-     * @param owner   The user adding the contact
-     * @param name    The organization's name
-     * @param phone   The organization's phone number
-     * @param email   The organization's email address
-     * @param website The organization's website URL
-     * @return The created Organization object
-     * @throws ContactAppException if logic fails (e.g., limit reached)
-     */
     public Organization createOrganizationContact(User owner, String name, String phone, String email, String website) throws ContactAppException {
         enforceContactLimit(owner);
         Organization org = new Organization(owner.getUserId(), name, website);
@@ -66,20 +40,25 @@ public class ContactService {
         if (!email.isEmpty()) org.addEmailAddress(email);
         
         allContacts.add(org);
-        FileHandler.saveContacts(allContacts); // Persist to file
+        FileHandler.saveContacts(allContacts); 
         return org;
     }
 
     /**
-     * Ensures the user has not exceeded their account tier limit.
+     * Retrieves all contacts belonging to a specific user.
+     * Demonstrates use of Java Streams API for filtering.
      *
-     * @param owner The user to check
-     * @throws ContactAppException if the user has reached their maximum allowed contacts
+     * @param owner The user requesting their contacts
+     * @return A list of the user's contacts
      */
+    public List<Contact> getUserContacts(User owner) {
+        return allContacts.stream()
+                .filter(contact -> contact.getUserId().equals(owner.getUserId()))
+                .collect(Collectors.toList());
+    }
+
     private void enforceContactLimit(User owner) throws ContactAppException {
-        long currentCount = allContacts.stream()
-                .filter(c -> c.getUserId().equals(owner.getUserId()))
-                .count();
+        long currentCount = getUserContacts(owner).size();
         if (currentCount >= owner.getContactLimit()) {
             throw new ContactAppException("Contact limit reached for your account type. Upgrade to Premium!");
         }

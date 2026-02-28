@@ -16,7 +16,7 @@ import java.util.Scanner;
  * The main entry point and console user interface for the application.
  *
  * @author Developer
- * @version 4.0
+ * @version 5.0
  */
 public class MyContactsApp {
 
@@ -58,23 +58,17 @@ public class MyContactsApp {
                 System.out.println("\n--- Dashboard (" + loggedInUser.getFullName() + ") ---");
                 System.out.println("1. Manage Profile");
                 System.out.println("2. Add Contact");
-                System.out.println("3. Logout");
+                System.out.println("3. View Contacts"); // NEW OPTION
+                System.out.println("4. Logout");
                 System.out.print("Choose an option: ");
                 
                 String choice = scanner.nextLine();
                 switch (choice) {
-                    case "1": 
-                        profileMenu(userService, scanner); 
-                        break;
-                    case "2": 
-                        createContactFlow(scanner); 
-                        break;
-                    case "3": 
-                        loggedInUser = null; 
-                        System.out.println("Logged out."); 
-                        break;
-                    default: 
-                        System.out.println("Invalid option.");
+                    case "1": profileMenu(userService, scanner); break;
+                    case "2": createContactFlow(scanner); break;
+                    case "3": viewContactsFlow(); break; // NEW FLOW
+                    case "4": loggedInUser = null; System.out.println("Logged out."); break;
+                    default: System.out.println("Invalid option.");
                 }
             }
         }
@@ -221,6 +215,23 @@ public class MyContactsApp {
             System.out.println("\nLogin Successful! Welcome back, " + loggedInUser.getFullName() + ".");
         } else {
             System.out.println("\nLogin Failed: Incorrect credentials or unregistered email.");
+        }
+    }
+    
+    /**
+     * Retrieves and displays all contacts for the logged-in user.
+     */
+    private static void viewContactsFlow() {
+        System.out.println("\n-- My Contacts --");
+        java.util.List<com.mycontactapp.contact.Contact> userContacts = contactService.getUserContacts(loggedInUser);
+        
+        if (userContacts.isEmpty()) {
+            System.out.println("You have no contacts saved yet.");
+        } else {
+            for (int i = 0; i < userContacts.size(); i++) {
+                System.out.println("\n[" + (i + 1) + "]");
+                System.out.println(userContacts.get(i).getFormattedDetails());
+            }
         }
     }
 }
