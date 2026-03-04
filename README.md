@@ -44,6 +44,10 @@ A Java-based console application for contact management, designed using clean, s
 * **Object Identity & Uniqueness:** Created a custom `Tag` class that strictly overrides `equals()` and `hashCode()` to ensure identical string inputs (e.g., "work" and "Work") are evaluated as the same object in memory.
 * **Collection Modeling:** Integrated a `Set<Tag>` relationship inside the abstract `Contact` model to enforce tag uniqueness per contact, and built a dynamic extraction method in the service layer to pull a master list of unique tags across all user contacts.
 
+### UC12: Apply Tags to Contacts
+* **Object Relationships:** Actively utilized the `Set<Tag>` relationship within the `Contact` model, allowing users to safely assign and revoke multiple unique tags per contact via the main console loop.
+* **Polymorphic Search Expansion:** Completed the `SearchFilterInterface` hierarchy by introducing a `TagSearch` implementation, securely leveraging the `contains()` method on the Java `Set` collection to locate specific tags efficiently.
+
 ## Tech Stack
 * Java
 

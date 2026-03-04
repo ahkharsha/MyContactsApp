@@ -16,8 +16,8 @@ public class Person extends Contact {
 
     /**
      * Constructs a new Person contact.
-     * @param userId       The ID of the user creating the contact
-     * @param name         The name of the person
+     * @param userId The ID of the user creating the contact
+     * @param name The name of the person
      * @param relationship The relationship to the user (e.g., "Friend", "Colleague")
      */
     public Person(String userId, String name, String relationship) {
@@ -27,16 +27,18 @@ public class Person extends Contact {
 
     /**
      * Constructs a Person contact with full details (for loading from storage).
-     * @param id           The unique contact ID
-     * @param userId       The ID of the user who owns this contact
-     * @param name         The name of the person
-     * @param phones       List of phone numbers
-     * @param emails       List of email addresses
-     * @param date         The creation date
+     * @param id The unique contact ID
+     * @param userId The ID of the user who owns this contact
+     * @param name The name of the person
+     * @param phones List of phone numbers
+     * @param emails List of email addresses
+     * @param date The creation date
      * @param relationship The relationship to the user
+     * @param viewCount The view count
+     * @param isActive Whether the contact is active
      */
-    public Person(String id, String userId, String name, List<String> phones, List<String> emails, LocalDateTime date, String relationship) {
-        super(id, userId, name, phones, emails, date);
+    public Person(String id, String userId, String name, List<String> phones, List<String> emails, LocalDateTime date, String relationship, int viewCount, boolean isActive) {
+        super(id, userId, name, phones, emails, date, viewCount, isActive);
         this.relationship = relationship;
     }
 

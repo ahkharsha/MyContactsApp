@@ -13,7 +13,7 @@ import java.util.List;
  * Demonstrates the use of Collections.sort() and the Comparator interface.
  *
  * @author Developer
- * @version 1.0
+ * @version 2.0
  */
 public class FilterService {
 
@@ -38,7 +38,7 @@ public class FilterService {
     /**
      * Sorts a list of contacts by the date they were added.
      * Demonstrates conditional sorting logic.
-     * @param contacts  The original list of contacts
+     * @param contacts The original list of contacts
      * @param ascending true for Oldest to Newest, false for Newest to Oldest
      * @return A newly sorted list
      */
@@ -53,6 +53,25 @@ public class FilterService {
                 } else {
                     return c2.getCreatedAt().compareTo(c1.getCreatedAt());
                 }
+            }
+        });
+        
+        return sortedList;
+    }
+
+    /**
+     * Sorts a list of contacts by view count (Frequently Contacted).
+     * @param contacts The original list of contacts
+     * @return A newly sorted list
+     */
+    public List<Contact> sortByFrequentlyContacted(List<Contact> contacts) {
+        List<Contact> sortedList = new ArrayList<>(contacts);
+        
+        Collections.sort(sortedList, new Comparator<Contact>() {
+            @Override
+            public int compare(Contact c1, Contact c2) {
+                // sort descending by viewCount
+                return Integer.compare(c2.getViewCount(), c1.getViewCount());
             }
         });
         

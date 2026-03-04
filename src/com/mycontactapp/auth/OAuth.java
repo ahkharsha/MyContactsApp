@@ -19,7 +19,6 @@ public class OAuth implements Authentication {
 
     /**
      * Constructs OAuth with access to the user repository.
-     *
      * @param userService The service containing registered users
      */
     public OAuth(UserService userService) {

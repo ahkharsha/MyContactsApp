@@ -22,15 +22,18 @@ public class UserService {
 
     private final List<User> registeredUsers;
 
+    /**
+     * Constructs a new UserService and loads existing users from file.
+     */
     public UserService() {
         this.registeredUsers = FileHandler.loadUsers(); // Load from file!
     }
 
     /**
      * Registers a new user with the system.
-     * @param email     The email address (must be unique)
-     * @param password  The user's password (will be hashed)
-     * @param fullName  The user's full name
+     * @param email The email address (must be unique)
+     * @param password The user's password (will be hashed)
+     * @param fullName The user's full name
      * @param isPremium true if the user wants a Premium account, false for Free
      * @return The newly registered User object
      * @throws ContactAppException if validation fails (e.g., duplicated email, weak password)
@@ -50,7 +53,7 @@ public class UserService {
 
     /**
      * Updates an existing user's profile information.
-     * @param user    The user to update
+     * @param user The user to update
      * @param newName The new full name
      * @throws ContactAppException if the new name is invalid
      */
@@ -61,8 +64,33 @@ public class UserService {
     }
 
     /**
+     * Updates a user's email address.
+     * @param user The user
+     * @param newEmail The new email
+     * @throws ContactAppException if invalid or taken
+     */
+    public void updateUserEmail(User user, String newEmail) throws ContactAppException {
+        if (!UserValidator.isValidEmail(newEmail)) throw new ContactAppException("Invalid email format.");
+        if (isEmailTaken(newEmail)) throw new ContactAppException("Email already in use.");
+        
+        user.setEmail(newEmail);
+        FileHandler.saveUsers(registeredUsers);
+    }
+
+    /**
+     * Deletes a user account.
+     * @param user The user to delete
+     * @return true if successful
+     */
+    public boolean deleteUserAccount(User user) {
+        boolean removed = registeredUsers.remove(user);
+        if (removed) FileHandler.saveUsers(registeredUsers);
+        return removed;
+    }
+
+    /**
      * Checks if the provided password matches the user's current password.
-     * @param user            The user attempting to authenticate
+     * @param user The user attempting to authenticate
      * @param currentPassword The password to check
      * @throws ContactAppException if the password does not match
      */

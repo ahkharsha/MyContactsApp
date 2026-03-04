@@ -20,7 +20,6 @@ public class BasicAuth implements Authentication {
 
     /**
      * Constructs BasicAuth with access to the user repository.
-     *
      * @param userService The service containing registered users
      */
     public BasicAuth(UserService userService) {
@@ -43,7 +42,6 @@ public class BasicAuth implements Authentication {
 
     /**
      * Hashes the inputted password to compare against the stored hash.
-     *
      * @param password The raw input password
      * @return The hex-encoded hash
      */

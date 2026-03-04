@@ -34,7 +34,6 @@ public class FileHandler {
     /**
      * Saves the list of registered users to a text file.
      * The file format includes user type, ID, email, hashed password, and full name.
-     *
      * @param users The list of users to save
      */
     public static void saveUsers(List<User> users) {
@@ -51,7 +50,6 @@ public class FileHandler {
     /**
      * Loads the list of registered users from a text file.
      * If the file does not exist, an empty list is returned.
-     *
      * @return A list of User objects (FreeUser or PremiumUser)
      */
     public static List<User> loadUsers() {
@@ -79,7 +77,6 @@ public class FileHandler {
     /**
      * Saves the list of contacts to a text file.
      * Handles both Person and Organization types, including their specific fields.
-     *
      * @param contacts The list of contacts to save
      */
     public static void saveContacts(List<Contact> contacts) {
@@ -93,7 +90,7 @@ public class FileHandler {
                 String tags = c.getTags().stream().map(com.mycontactapp.tagging.Tag::getName).reduce((t1, t2) -> t1 + "," + t2).orElse("");
                 
                 writer.println(type + "|" + c.getContactId() + "|" + c.getUserId() + "|" + c.getName() + "|" 
-                        + phones + "|" + emails + "|" + c.getCreatedAt().toString() + "|" + extra + "|" + tags);
+                        + phones + "|" + emails + "|" + c.getCreatedAt().toString() + "|" + extra + "|" + tags + "|" + c.getViewCount() + "|" + c.isActive());
             }
         } catch (IOException e) {
             System.err.println("Error saving contacts to file.");
@@ -103,7 +100,6 @@ public class FileHandler {
     /**
      * Loads the list of contacts from a text file.
      * Reconstructs complex objects including lists of phones, emails, and tags.
-     *
      * @return A list of Contact objects
      */
     public static List<Contact> loadContacts() {
@@ -119,12 +115,21 @@ public class FileHandler {
                     List<String> phones = p[4].isEmpty() ? new ArrayList<>() : new ArrayList<>(Arrays.asList(p[4].split(",")));
                     List<String> emails = p[5].isEmpty() ? new ArrayList<>() : new ArrayList<>(Arrays.asList(p[5].split(",")));
                     LocalDateTime createdAt = LocalDateTime.parse(p[6]);
+                    
+                    int viewCount = 0;
+                    boolean isActive = true;
+                    if (p.length >= 10 && !p[9].isEmpty()) {
+                        try { viewCount = Integer.parseInt(p[9]); } catch (NumberFormatException e) {}
+                    }
+                    if (p.length >= 11 && !p[10].isEmpty()) {
+                        isActive = Boolean.parseBoolean(p[10]);
+                    }
 
                     Contact c = p[0].equals("Person") 
-                        ? new Person(p[1], p[2], p[3], phones, emails, createdAt, p[7])
-                        : new Organization(p[1], p[2], p[3], phones, emails, createdAt, p[7]);
+                        ? new Person(p[1], p[2], p[3], phones, emails, createdAt, p[7], viewCount, isActive)
+                        : new Organization(p[1], p[2], p[3], phones, emails, createdAt, p[7], viewCount, isActive);
 
-                    if (p.length == 9 && !p[8].isEmpty()) {
+                    if (p.length >= 9 && !p[8].isEmpty()) {
                         for (String tagName : p[8].split(",")) {
                             c.addTag(new com.mycontactapp.tagging.Tag(tagName));
                         }

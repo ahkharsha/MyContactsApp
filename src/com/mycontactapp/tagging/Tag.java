@@ -14,7 +14,6 @@ public class Tag {
 
     /**
      * Constructs a new Tag.
-     *
      * @param name The name of the tag (e.g., "Family", "Work")
      * @throws IllegalArgumentException if the name is null or empty
      */
@@ -27,7 +26,6 @@ public class Tag {
 
     /**
      * Gets the name of the tag.
-     *
      * @return The tag name
      */
     public String getName() {
@@ -37,7 +35,6 @@ public class Tag {
     /**
      * Checks if this tag is equal to another object.
      * Tags are considered equal if they have the same name (case-insensitive).
-     *
      * @param o The object to compare with
      * @return true if the objects are equal, false otherwise
      */

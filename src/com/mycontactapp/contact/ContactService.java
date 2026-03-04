@@ -1,10 +1,13 @@
 package com.mycontactapp.contact;
 
 import com.mycontactapp.exception.ContactAppException;
+import com.mycontactapp.tagging.Tag;
 import com.mycontactapp.user.model.User;
 import com.mycontactapp.util.FileHandler;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -12,28 +15,28 @@ import java.util.stream.Collectors;
  * Manages core contact operations such as creation and data retrieval.
  *
  * @author Developer
- * @version 6.0
+ * @version 7.0
  */
 public class ContactService {
     
     private final List<Contact> allContacts;
 
     /**
-     * Constructs the ContactService and loads existing contacts from file.
+     * Constructs a new ContactService and loads existing contacts from file.
      */
     public ContactService() {
         this.allContacts = FileHandler.loadContacts();
     }
 
     /**
-     * Creates a new Person contact for a user.
-     * @param owner        The user creating the contact
-     * @param name         The name of the new contact
-     * @param phone        The phone number
-     * @param email        The email address
-     * @param relationship The relationship to the user
-     * @return The newly created Person object
-     * @throws ContactAppException if the user has reached their contact limit
+     * Creates and saves a new Person contact.
+     * @param owner The user creating the contact
+     * @param name The name of the person
+     * @param phone Optional phone number
+     * @param email Optional email address
+     * @param relationship Relationship to the user
+     * @return The created Person object
+     * @throws ContactAppException if creation fails or limit reached
      */
     public Person createPersonContact(User owner, String name, String phone, String email, String relationship) throws ContactAppException {
         enforceContactLimit(owner);
@@ -47,14 +50,14 @@ public class ContactService {
     }
 
     /**
-     * Creates a new Organization contact for a user.
-     * @param owner   The user creating the contact
-     * @param name    The name of the organization
-     * @param phone   The phone number
-     * @param email   The email address
-     * @param website The website URL
-     * @return The newly created Organization object
-     * @throws ContactAppException if the user has reached their contact limit
+     * Creates and saves a new Organization contact.
+     * @param owner The user creating the contact
+     * @param name The organization name
+     * @param phone Optional phone number
+     * @param email Optional email address
+     * @param website The organization's website
+     * @return The created Organization object
+     * @throws ContactAppException if creation fails or limit reached
      */
     public Organization createOrganizationContact(User owner, String name, String phone, String email, String website) throws ContactAppException {
         enforceContactLimit(owner);
@@ -69,20 +72,20 @@ public class ContactService {
 
     /**
      * Retrieves all contacts belonging to a specific user.
-     * @param owner The user whose contacts should be retrieved
-     * @return A list of contacts owned by the user
+     * @param owner The user whose contacts to retrieve
+     * @return A list of the user's contacts
      */
     public List<Contact> getUserContacts(User owner) {
         return allContacts.stream()
-                .filter(contact -> contact.getUserId().equals(owner.getUserId()))
+                .filter(contact -> contact.getUserId().equals(owner.getUserId()) && contact.isActive())
                 .collect(Collectors.toList());
     }
 
     /**
-     * Updates the name of an existing contact.
+     * Updates a contact's name and saves the change.
      * @param contact The contact to update
-     * @param newName The new name to assign
-     * @throws ContactAppException if the new name is invalid
+     * @param newName The new name
+     * @throws ContactAppException if the name is invalid
      */
     public void updateContactName(Contact contact, String newName) throws ContactAppException {
         if (newName == null || newName.trim().isEmpty()) throw new ContactAppException("Contact name cannot be empty.");
@@ -91,10 +94,10 @@ public class ContactService {
     }
 
     /**
-     * Adds a new phone number to a contact.
-     * @param contact  The contact to update
+     * Adds a phone number to a contact and saves.
+     * @param contact The contact to update
      * @param newPhone The phone number to add
-     * @throws ContactAppException if the phone number is invalid
+     * @throws ContactAppException if the number is invalid
      */
     public void addPhoneToContact(Contact contact, String newPhone) throws ContactAppException {
         if (newPhone == null || newPhone.trim().isEmpty()) throw new ContactAppException("Phone number cannot be empty.");
@@ -103,10 +106,10 @@ public class ContactService {
     }
 
     /**
-     * Adds a new email address to a contact.
-     * @param contact  The contact to update
+     * Adds an email address to a contact and saves.
+     * @param contact The contact to update
      * @param newEmail The email address to add
-     * @throws ContactAppException if the email address is invalid
+     * @throws ContactAppException if the email is invalid
      */
     public void addEmailToContact(Contact contact, String newEmail) throws ContactAppException {
         if (newEmail == null || newEmail.trim().isEmpty()) throw new ContactAppException("Email address cannot be empty.");
@@ -115,18 +118,48 @@ public class ContactService {
     }
 
     /**
-     * Removes a contact from the system permanently.
-     * @param contact The contact to delete
-     * @return true if the contact was found and removed, false otherwise
+     * Adds a tag to a contact and saves.
+     * @param contact The contact to update
+     * @param tagName The name of the tag to add
+     * @throws ContactAppException if the tag name is invalid
      */
-    public boolean deleteContact(Contact contact) {
-        boolean isRemoved = allContacts.remove(contact);
-        if (isRemoved) FileHandler.saveContacts(allContacts);
-        return isRemoved;
+    public void addTagToContact(Contact contact, String tagName) throws ContactAppException {
+        try {
+            contact.addTag(new Tag(tagName));
+            FileHandler.saveContacts(allContacts);
+        } catch (IllegalArgumentException e) {
+            throw new ContactAppException(e.getMessage());
+        }
     }
 
     /**
-     * Deletes multiple contacts at once.
+     * Removes a tag from a contact and saves.
+     * @param contact The contact to update
+     * @param tagName The name of the tag to remove
+     * @throws ContactAppException if the tag name is invalid
+     */
+    public void removeTagFromContact(Contact contact, String tagName) throws ContactAppException {
+        try {
+            contact.removeTag(new Tag(tagName));
+            FileHandler.saveContacts(allContacts);
+        } catch (IllegalArgumentException e) {
+            throw new ContactAppException(e.getMessage());
+        }
+    }
+
+    /**
+     * Deletes a single contact (Soft Delete).
+     * @param contact The contact to delete
+     * @return true if successful
+     */
+    public boolean deleteContact(Contact contact) {
+        contact.setActive(false);
+        FileHandler.saveContacts(allContacts);
+        return true;
+    }
+
+    /**
+     * Deletes multiple contacts at once (Soft Delete).
      * @param contactsToDelete The list of contacts to remove
      * @return The number of contacts successfully deleted
      */
@@ -134,19 +167,29 @@ public class ContactService {
         if (contactsToDelete == null || contactsToDelete.isEmpty()) return 0;
         int count = 0;
         for (Contact c : contactsToDelete) {
-            if (allContacts.remove(c)) count++;
+            c.setActive(false);
+            count++;
         }
         if (count > 0) FileHandler.saveContacts(allContacts);
         return count;
     }
 
     /**
-     * Retrieves all unique tags used across a user's contact list.
-     * @param owner The user whose tags should be retrieved
+     * Increments the view count for a contact.
+     * @param contact The contact viewed
+     */
+    public void incrementContactViewCount(Contact contact) {
+        contact.incrementViewCount();
+        FileHandler.saveContacts(allContacts);
+    }
+
+    /**
+     * Retrieves all unique tags used across a user's contacts.
+     * @param owner The user
      * @return A set of unique tags
      */
-    public java.util.Set<com.mycontactapp.tagging.Tag> getAllUserTags(User owner) {
-        java.util.Set<com.mycontactapp.tagging.Tag> uniqueTags = new java.util.HashSet<>();
+    public Set<Tag> getAllUserTags(User owner) {
+        Set<Tag> uniqueTags = new HashSet<>();
         for (Contact contact : getUserContacts(owner)) {
             uniqueTags.addAll(contact.getTags());
         }
@@ -154,7 +197,7 @@ public class ContactService {
     }
 
     /**
-     * Helper to check if a user can create more contacts.
+     * Checks if the user has reached their contact storage limit.
      * @param owner The user to check
      * @throws ContactAppException if the limit is reached
      */

@@ -16,8 +16,8 @@ public class Organization extends Contact {
 
     /**
      * Constructs a new Organization contact.
-     * @param userId  The ID of the user creating the contact
-     * @param name    The name of the organization
+     * @param userId The ID of the user creating the contact
+     * @param name The name of the organization
      * @param website The website URL of the organization
      */
     public Organization(String userId, String name, String website) {
@@ -27,16 +27,18 @@ public class Organization extends Contact {
 
     /**
      * Constructs an Organization contact with full details (for loading from storage).
-     * @param id      The unique contact ID
-     * @param userId  The ID of the user who owns this contact
-     * @param name    The name of the organization
-     * @param phones  List of phone numbers
-     * @param emails  List of email addresses
-     * @param date    The creation date
+     * @param id The unique contact ID
+     * @param userId The ID of the user who owns this contact
+     * @param name The name of the organization
+     * @param phones List of phone numbers
+     * @param emails List of email addresses
+     * @param date The creation date
      * @param website The website URL
+     * @param viewCount The view count
+     * @param isActive Whether the contact is active
      */
-    public Organization(String id, String userId, String name, List<String> phones, List<String> emails, LocalDateTime date, String website) {
-        super(id, userId, name, phones, emails, date);
+    public Organization(String id, String userId, String name, List<String> phones, List<String> emails, LocalDateTime date, String website, int viewCount, boolean isActive) {
+        super(id, userId, name, phones, emails, date, viewCount, isActive);
         this.website = website;
     }
 

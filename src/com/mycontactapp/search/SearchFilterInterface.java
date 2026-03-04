@@ -13,9 +13,8 @@ public interface SearchFilterInterface {
     
     /**
      * Checks if the given contact matches the search query.
-     *
      * @param contact The contact to evaluate
-     * @param query   The search string provided by the user
+     * @param query The search string provided by the user
      * @return true if it matches, false otherwise
      */
     boolean matches(Contact contact, String query);

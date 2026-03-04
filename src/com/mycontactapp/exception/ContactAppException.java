@@ -16,7 +16,6 @@ public class ContactAppException extends Exception {
 
 	/**
      * Constructs a new ContactAppException with the specified detail message.
-     *
      * @param message The detail message explaining the reason for the exception
      */
     public ContactAppException(String message) {

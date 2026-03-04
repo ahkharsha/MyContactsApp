@@ -1,10 +1,14 @@
 package com.mycontactapp.contact;
 
+import com.mycontactapp.tagging.Tag;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -21,12 +25,14 @@ public abstract class Contact {
     private List<String> phoneNumbers;
     private List<String> emailAddresses;
     private final LocalDateTime createdAt;
-    private java.util.Set<com.mycontactapp.tagging.Tag> tags;
+    private Set<Tag> tags;
+    private int viewCount;
+    private boolean isActive;
 
     /**
      * Constructs a new Contact for a specific user.
      * @param userId The ID of the user who owns this contact
-     * @param name   The name of the contact
+     * @param name The name of the contact
      */
     public Contact(String userId, String name) {
         this.contactId = UUID.randomUUID().toString();
@@ -34,27 +40,33 @@ public abstract class Contact {
         this.createdAt = LocalDateTime.now();
         this.phoneNumbers = new ArrayList<>();
         this.emailAddresses = new ArrayList<>();
-        this.tags = new java.util.HashSet<>();
+        this.tags = new HashSet<>();
+        this.viewCount = 0;
+        this.isActive = true;
         setName(name);
     }
 
     /**
      * Constructs a Contact with full details (useful for loading from storage).
-     * @param contactId   The unique ID of the contact
-     * @param userId      The ID of the user who owns this contact
-     * @param name        The name of the contact
-     * @param phones      List of phone numbers
-     * @param emails      List of email addresses
-     * @param createdAt   The date and time the contact was created
+     * @param contactId The unique ID of the contact
+     * @param userId The ID of the user who owns this contact
+     * @param name The name of the contact
+     * @param phones List of phone numbers
+     * @param emails List of email addresses
+     * @param createdAt The date and time the contact was created
+     * @param viewCount The number of times the contact has been viewed
+     * @param isActive Whether the contact is active (not soft-deleted)
      */
-    public Contact(String contactId, String userId, String name, List<String> phones, List<String> emails, LocalDateTime createdAt) {
+    public Contact(String contactId, String userId, String name, List<String> phones, List<String> emails, LocalDateTime createdAt, int viewCount, boolean isActive) {
         this.contactId = contactId;
         this.userId = userId;
         this.name = name;
         this.phoneNumbers = phones;
         this.emailAddresses = emails;
         this.createdAt = createdAt;
-        this.tags = new java.util.HashSet<>();
+        this.tags = new HashSet<>();
+        this.viewCount = viewCount;
+        this.isActive = isActive;
     }
 
     /**
@@ -96,7 +108,30 @@ public abstract class Contact {
      * Gets the set of tags associated with the contact.
      * @return Set of tags
      */
-    public java.util.Set<com.mycontactapp.tagging.Tag> getTags() { return tags; }
+    public Set<Tag> getTags() { return tags; }
+
+    /**
+     * Gets the view count of the contact.
+     * @return The view count
+     */
+    public int getViewCount() { return viewCount; }
+
+    /**
+     * Increments the view count by 1.
+     */
+    public void incrementViewCount() { this.viewCount++; }
+
+    /**
+     * Checks if the contact is active (not deleted).
+     * @return true if active, false otherwise
+     */
+    public boolean isActive() { return isActive; }
+
+    /**
+     * Sets the active status of the contact.
+     * @param isActive true to activate, false to soft-delete
+     */
+    public void setActive(boolean isActive) { this.isActive = isActive; }
 
     /**
      * Updates the name of the contact.
@@ -124,13 +159,13 @@ public abstract class Contact {
      * Adds a tag to the contact.
      * @param tag The tag object to add
      */
-    public void addTag(com.mycontactapp.tagging.Tag tag) { this.tags.add(tag); }
+    public void addTag(Tag tag) { this.tags.add(tag); }
 
     /**
      * Removes a tag from the contact.
      * @param tag The tag object to remove
      */
-    public void removeTag(com.mycontactapp.tagging.Tag tag) { this.tags.remove(tag); }
+    public void removeTag(Tag tag) { this.tags.remove(tag); }
 
     /**
      * Returns a formatted string containing the contact's details.
@@ -148,7 +183,7 @@ public abstract class Contact {
                 .orElse("No email addresses provided");
 
         String tagDisplay = tags.isEmpty() ? "No Tags" : 
-                tags.stream().map(com.mycontactapp.tagging.Tag::toString).reduce((t1, t2) -> t1 + " " + t2).get();
+                tags.stream().map(Tag::toString).reduce((t1, t2) -> t1 + " " + t2).get();
 
         return String.format(
             "Name: %s\nPhones: %s\nEmails: %s\nTags: %s\nAdded On: %s",

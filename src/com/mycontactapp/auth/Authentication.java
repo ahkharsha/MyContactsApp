@@ -15,8 +15,7 @@ public interface Authentication {
 
     /**
      * Attempts to authenticate a user based on provided credentials.
-     *
-     * @param principal  The primary identity of the user (e.g., email)
+     * @param principal The primary identity of the user (e.g., email)
      * @param credential The proof of identity (e.g., password or OAuth provider name)
      * @return An Optional containing the User if successful, or empty if authentication fails
      */
