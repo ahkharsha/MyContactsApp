@@ -3,6 +3,7 @@ package com.mycontactapp.menu;
 import com.mycontactapp.auth.Authentication;
 import com.mycontactapp.auth.BasicAuth;
 import com.mycontactapp.auth.OAuth;
+import com.mycontactapp.auth.SessionManager;
 import com.mycontactapp.exception.ContactAppException;
 import com.mycontactapp.user.UserService;
 import com.mycontactapp.user.model.User;
@@ -14,7 +15,7 @@ import java.util.Scanner;
  * AuthMenu
  * Manages user authentication flows (register, login, profile).
  * @author Developer
- * @version 1.0
+ * @version 2.0
  */
 public class AuthMenu {
 
@@ -68,8 +69,13 @@ public class AuthMenu {
         }
         
         Optional<User> authResult = authStrategy.authenticate(email, credential);
-        if (authResult.isPresent()) { System.out.println("\nLogin Successful! Welcome back, " + authResult.get().getFullName() + "."); } 
-        else { System.out.println("\nLogin Failed: Incorrect credentials or unregistered email."); }
+        if (authResult.isPresent()) {
+            // Singleton session manager keeps login state independent from the UI controller.
+            SessionManager.getInstance().login(authResult.get());
+            System.out.println("\nLogin Successful! Welcome back, " + authResult.get().getFullName() + ".");
+        } else {
+            System.out.println("\nLogin Failed: Incorrect credentials or unregistered email.");
+        }
         
         return authResult;
     }
@@ -114,6 +120,7 @@ public class AuthMenu {
                 System.out.print("WARNING: Are you sure you want to delete your account? This cannot be undone. (yes/no): ");
                 if (scanner.nextLine().trim().equalsIgnoreCase("yes")) {
                     if (userService.deleteUserAccount(loggedInUser)) {
+                        SessionManager.getInstance().logout();
                         System.out.println("Account deleted. Goodbye.");
                         return true;
                     } else {

@@ -1,5 +1,6 @@
 package com.mycontactapp.main;
 
+import com.mycontactapp.auth.SessionManager;
 import com.mycontactapp.contact.ContactService;
 import com.mycontactapp.menu.AuthMenu;
 import com.mycontactapp.menu.ContactMenu;
@@ -15,17 +16,16 @@ import java.util.Scanner;
  * MyContactsApp
  * The main entry point and routing layer for the console application.
  * @author Developer
- * @version 12.0
+ * @version 13.0
  */
 public class MyContactsApp {
-
-    private static User loggedInUser = null;
     
     // Core application services
     private static final UserService userService = new UserService();
     private static final ContactService contactService = new ContactService();
     private static final SearchFilterService searchService = new SearchFilterService();
     private static final FilterService filterService = new FilterService();
+    private static final SessionManager sessionManager = SessionManager.getInstance();
 
     /**
      * Application entry point.
@@ -38,7 +38,7 @@ public class MyContactsApp {
         System.out.println("=== Welcome to MyContacts App ===");
 
         while (running) {
-            if (loggedInUser == null) {
+            if (!sessionManager.isLoggedIn()) {
                 System.out.println("\n--- Main Menu ---");
                 System.out.println("1. Register New User");
                 System.out.println("2. Login");
@@ -49,7 +49,7 @@ public class MyContactsApp {
 
                 switch (choice) {
                     case "1" -> AuthMenu.registerFlow(userService, scanner);
-                    case "2" -> loggedInUser = AuthMenu.loginFlow(userService, scanner).orElse(null);
+                    case "2" -> AuthMenu.loginFlow(userService, scanner);
                     case "3" -> {
                         running = false;
                         System.out.println("Goodbye!");
@@ -57,6 +57,7 @@ public class MyContactsApp {
                     default -> System.out.println("Invalid option.");
                 }
             } else {
+                User loggedInUser = sessionManager.getCurrentUser();
                 System.out.println("\n--- Dashboard (" + loggedInUser.getFullName() + ") ---");
                 System.out.println("1. Manage Profile");
                 System.out.println("2. Add Contact");
@@ -74,7 +75,7 @@ public class MyContactsApp {
                 switch (choice) {
                     case "1" -> {
                         if (AuthMenu.profileMenu(userService, scanner, loggedInUser)) {
-                            loggedInUser = null;
+                            sessionManager.logout();
                         }
                     }
                     case "2" -> ContactMenu.createContactFlow(contactService, scanner, loggedInUser);
@@ -86,7 +87,7 @@ public class MyContactsApp {
                     case "8" -> OperationsMenu.filterContactsFlow(contactService, filterService, scanner, loggedInUser);
                     case "9" -> ContactMenu.manageTagsFlow(contactService, loggedInUser);
                     case "10" -> {
-                        loggedInUser = null;
+                        sessionManager.logout();
                         System.out.println("Logged out.");
                     }
                     default -> System.out.println("Invalid option.");

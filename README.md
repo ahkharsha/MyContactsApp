@@ -9,8 +9,8 @@ A Java-based console application for contact management, designed using clean, s
 * **Builder-Driven Object Construction:** Implemented a `UserBuilder` to assemble validated registration data step-by-step before object creation, aligning the workflow with the Builder design pattern while keeping user initialization clean and extensible.
 
 ### UC2: User Authentication
-* **Polymorphic Architecture:** Implemented an `Authentication` interface utilizing standard OOP principles, providing separate, modular implementations for standard logins (`BasicAuth`) and simulated third-party SSO (`OAuth`). 
-* **Safe State Management:** Utilized `java.util.Optional` to safely wrap login queries, protecting the application from `NullPointerExceptions` during invalid login attempts, and established a basic session management loop in the main controller.
+* **Strategy-Based Authentication:** Refactored login handling to utilize the `Authentication` strategy interface with dedicated `BasicAuth` and `OAuth` implementations, allowing the application to switch authentication mechanisms cleanly at runtime.
+* **Singleton Session Control:** Implemented a centralized `SessionManager` Singleton to manage authenticated user state consistently across login, logout, and account-deletion flows without duplicating session logic in the UI layer.
 
 ### UC3: User Profile Management
 * **State Modification:** Implemented strict setter logic to allow users to update their profile names while preventing invalid states (e.g., null or empty strings).
