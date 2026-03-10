@@ -1,8 +1,8 @@
 package com.mycontactapp.user;
 
 import com.mycontactapp.exception.ContactAppException;
-import com.mycontactapp.user.model.FreeUser;
-import com.mycontactapp.user.model.PremiumUser;
+import com.mycontactapp.user.builder.UserBuilder;
+import com.mycontactapp.user.factory.UserFactory;
 import com.mycontactapp.user.model.User;
 import com.mycontactapp.util.FileHandler;
 
@@ -16,17 +16,19 @@ import java.util.Optional;
  * Handles user-related tasks like registering new accounts.
  *
  * @author Developer
- * @version 4.0
+ * @version 2.0
  */
 public class UserService {
 
     private final List<User> registeredUsers;
+    private final UserFactory userFactory;
 
     /**
      * Constructs a new UserService and loads existing users from file.
      */
     public UserService() {
         this.registeredUsers = FileHandler.loadUsers(); // Load from file!
+        this.userFactory = new UserFactory();
     }
 
     /**
@@ -44,10 +46,16 @@ public class UserService {
         if (isEmailTaken(email)) throw new ContactAppException("An account with this email already exists.");
 
         String hashedPassword = hashPassword(password);
-        User newUser = isPremium ? new PremiumUser(email, hashedPassword, fullName) : new FreeUser(email, hashedPassword, fullName);
+        // Builder assembles the registration payload before the factory selects the concrete subtype.
+        UserBuilder builder = new UserBuilder()
+            .setEmail(email)
+            .setPasswordHash(hashedPassword)
+            .setFullName(fullName);
+        String accountType = isPremium ? "Premium" : "Free";
+        User newUser = userFactory.createUser(accountType, builder);
 
         registeredUsers.add(newUser);
-        FileHandler.saveUsers(registeredUsers); // Save to file!
+        FileHandler.saveUsers(registeredUsers); // Save to file
         return newUser;
     }
 

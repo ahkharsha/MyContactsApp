@@ -5,8 +5,8 @@ A Java-based console application for contact management, designed using clean, s
 ## Features Implemented
 
 ### UC1: User Registration
-* **Secure Registration:** Implemented user creation with strict encapsulation, Regex-based input validation, and SHA-256 password hashing.
-* **Robust Architecture:** Utilized abstract domain models (`FreeUser`/`PremiumUser`) for varied limits and a custom `ContactAppException` for clean error handling.
+* **Factory-Based User Creation:** Refactored registration to utilize a dedicated `UserFactory` that dynamically creates `FreeUser` and `PremiumUser` objects based on the selected account type, improving separation of concerns and adherence to the Factory design pattern.
+* **Builder-Driven Object Construction:** Implemented a `UserBuilder` to assemble validated registration data step-by-step before object creation, aligning the workflow with the Builder design pattern while keeping user initialization clean and extensible.
 
 ### UC2: User Authentication
 * **Polymorphic Architecture:** Implemented an `Authentication` interface utilizing standard OOP principles, providing separate, modular implementations for standard logins (`BasicAuth`) and simulated third-party SSO (`OAuth`). 

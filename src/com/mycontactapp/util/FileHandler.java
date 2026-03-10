@@ -3,7 +3,8 @@ package com.mycontactapp.util;
 import com.mycontactapp.contact.Contact;
 import com.mycontactapp.contact.Organization;
 import com.mycontactapp.contact.Person;
-import com.mycontactapp.user.model.FreeUser;
+import com.mycontactapp.user.builder.UserBuilder;
+import com.mycontactapp.user.factory.UserFactory;
 import com.mycontactapp.user.model.PremiumUser;
 import com.mycontactapp.user.model.User;
 
@@ -26,6 +27,7 @@ public class FileHandler {
     private static final String USERS_FILE = DATA_DIR + "/users.txt";
     private static final String CONTACTS_FILE = DATA_DIR + "/contacts.txt";
     private static final String DELIMITER = "\\|"; 
+    private static final UserFactory USER_FACTORY = new UserFactory();
 
     static {
         new File(DATA_DIR).mkdirs(); 
@@ -62,9 +64,12 @@ public class FileHandler {
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(DELIMITER);
                 if (parts.length == 5) {
-                    User user = parts[0].equals("Premium") 
-                        ? new PremiumUser(parts[2], parts[3], parts[4], parts[1]) 
-                        : new FreeUser(parts[2], parts[3], parts[4], parts[1]);
+                    UserBuilder builder = new UserBuilder()
+                            .setUserId(parts[1])
+                            .setEmail(parts[2])
+                            .setPasswordHash(parts[3])
+                            .setFullName(parts[4]);
+                    User user = USER_FACTORY.createUser(parts[0], builder);
                     users.add(user);
                 }
             }
