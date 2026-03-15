@@ -42,6 +42,10 @@ A Java-based console application for contact management, designed using clean, s
 * **Logical Combinations:** Implemented the `Specification` Pattern, transforming simple query strategies into combinable objects that support logical `AND`/`OR` chaining, allowing users to build complex searches (e.g., matching a specific Name substring AND a specific Tag) seamlessly.
 * **Cascading Queries:** Developed a `SearchHandler` abstract pipeline utilizing the Chain of Responsibility Pattern. This enables "Global Search" functionality that passes a user's query through a cascade of evaluators (Name -> Phone -> Email) until a match is found.
 
+### UC10: Advanced Filtering
+* **Pluggable Algorithms:** Implemented the `ContactFilter` Strategy interface alongside concrete strategies like `TagFilter` and `FrequentlyContactedFilter`. This ensures filtering logic is fully decoupled from the core UI iteration and can be expanded easily.
+* **Compound Targeting:** Leveraged the Composite design pattern through `CompositeFilter`. This class holds a collection of Strategies and processes the output iterably through Java Streams, allowing users to build precise, multi-tiered data queries (e.g., retrieving contacts that both possess the "work" tag AND have >5 profile views).
+
 ### UC11: Create and Manage Tags
 * **Object Identity & Uniqueness:** Created a custom `Tag` class that strictly overrides `equals()` and `hashCode()` to ensure identical string inputs (e.g., "work" and "Work") are evaluated as the same object in memory.
 * **Collection Modeling:** Integrated a `Set<Tag>` relationship inside the abstract `Contact` model to enforce tag uniqueness per contact, and built a dynamic extraction method in the service layer to pull a master list of unique tags across all user contacts.

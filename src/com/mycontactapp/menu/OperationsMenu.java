@@ -3,6 +3,9 @@ package com.mycontactapp.menu;
 import com.mycontactapp.contact.Contact;
 import com.mycontactapp.contact.ContactService;
 import com.mycontactapp.contact.ContactGroup;
+import com.mycontactapp.filter.CompositeFilter;
+import com.mycontactapp.filter.FrequentlyContactedFilter;
+import com.mycontactapp.filter.TagFilter;
 import com.mycontactapp.search.FilterService;
 import com.mycontactapp.search.SearchFilterService;
 import com.mycontactapp.search.SearchFilterInterface;
@@ -227,11 +230,12 @@ public class OperationsMenu {
         System.out.println("2. Sort by Date Added (Oldest to Newest)");
         System.out.println("3. Sort by Date Added (Newest to Oldest)");
         System.out.println("4. Sort by Frequently Contacted (Most Viewed)");
+        System.out.println("5. Advanced Multi-Level Filter [Strategy + Composite Patterns]");
         System.out.print("Choose an option: ");
         String choice = scanner.nextLine();
 
         List<Contact> userContacts = contactService.getUserContacts(loggedInUser);
-        if (userContacts.isEmpty()) { System.out.println("You have no contacts to sort."); return; }
+        if (userContacts.isEmpty()) { System.out.println("You have no contacts to sort or filter."); return; }
 
         List<Contact> sortedResults;
         
@@ -240,13 +244,34 @@ public class OperationsMenu {
             case "2" -> sortedResults = filterService.sortByDateAdded(userContacts, true);
             case "3" -> sortedResults = filterService.sortByDateAdded(userContacts, false);
             case "4" -> sortedResults = filterService.sortByFrequentlyContacted(userContacts);
+            case "5" -> {
+                System.out.println("-- Advanced Filter Setup --");
+                CompositeFilter advancedFilter = new CompositeFilter();
+                
+                System.out.print("Enter tag to require (leave blank to skip): ");
+                String tagReq = scanner.nextLine().trim();
+                if (!tagReq.isEmpty()) {
+                    advancedFilter.addFilter(new TagFilter(tagReq));
+                }
+                
+                System.out.print("Enter minimum views required (e.g., 5, leave blank to skip): ");
+                String viewReqStr = scanner.nextLine().trim();
+                if (!viewReqStr.isEmpty()) {
+                    try {
+                        int minV = Integer.parseInt(viewReqStr);
+                        advancedFilter.addFilter(new FrequentlyContactedFilter(minV));
+                    } catch (NumberFormatException ignored) {}
+                }
+                
+                sortedResults = filterService.applyFilter(userContacts, advancedFilter);
+            }
             default -> {
                 System.out.println("Invalid option selected.");
                 return;
             }
         }
 
-        System.out.println("\nFiltered & Sorted Contacts:");
+        System.out.println("\nFiltered & Sorted Contacts (" + sortedResults.size() + " matches):");
         for (int i = 0; i < sortedResults.size(); i++) {
             System.out.println("\n[" + (i + 1) + "]");
             System.out.println(sortedResults.get(i).getFormattedDetails());

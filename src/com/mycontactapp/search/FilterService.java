@@ -2,6 +2,8 @@ package com.mycontactapp.search;
 
 import com.mycontactapp.contact.Contact;
 
+import com.mycontactapp.filter.ContactFilter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,6 +18,16 @@ import java.util.List;
  * @version 2.0
  */
 public class FilterService {
+
+    /**
+     * Applies the given ContactFilter strategy to the list of contacts.
+     * @param contacts The original list of contacts
+     * @param filter The filter strategy (or composite)
+     * @return A newly filtered list
+     */
+    public List<Contact> applyFilter(List<Contact> contacts, ContactFilter filter) {
+        return filter.filter(contacts);
+    }
 
     /**
      * Sorts a list of contacts alphabetically by their name.
