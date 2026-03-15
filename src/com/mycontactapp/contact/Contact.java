@@ -18,9 +18,9 @@ import java.util.UUID;
  * Abstract base class representing a generic contact.
  *
  * @author Developer
- * @version 3.0
+ * @version 4.0
  */
-public abstract class Contact implements ContactDisplay {
+public abstract class Contact implements ContactDisplay, ContactComponent {
     private final String contactId;
     private final String userId; 
     private String name;
@@ -237,5 +237,16 @@ public abstract class Contact implements ContactDisplay {
             "Name: %s\nPhones: %s\nEmails: %s\nTags: %s\nAdded On: %s",
             name, phones, emails, tagDisplay, createdAt.format(dtf)
         );
+    }
+
+    /**
+     * Returns this single contact wrapped in a list.
+     * @return List containing only this contact
+     */
+    @Override
+    public List<Contact> getAsContactList() {
+        List<Contact> singleList = new ArrayList<>();
+        singleList.add(this);
+        return singleList;
     }
 }

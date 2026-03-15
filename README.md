@@ -35,8 +35,8 @@ A Java-based console application for contact management, designed using clean, s
 * **Safe Deletion Strategies:** Supported both Soft Delete (which simply marks a contact as `isActive=false`, hiding it from the UI while preserving the data) and Hard Delete (which permanently strips the object from the underlying collection and invokes a file write), tied to an interactive CLI confirmation flow to prevent accidental data loss.
 
 ### UC8: Bulk Operations
-* **Collection Iteration:** Leveraged standard Java `for` loops and `List` structures to process bulk data operations, dynamically parsing comma-separated string inputs from the user to queue multiple objects for deletion in a single pass.
-* **Data Exporting:** Implemented basic File I/O handling utilizing `FileWriter` and `PrintWriter` to iterate over user contacts and export them cleanly into an external, formatted CSV file.
+* **Composite UI Architecture:** Built a `ContactComponent` interface to unify single `Contact` objects and structural `ContactGroup` objects, implementing the Composite Design Pattern.
+* **Streamlined Bulk Delegation:** Refactored `OperationsMenu` to rely on the `ContactGroup` rather than managing iterations directly, enabling the seamless execution of bulk tagging, deletion, and exportation uniformly across grouped subsets of data.
 
 ### UC9: Search Contacts
 * **Search Interface:** Implemented a clean `SearchFilterInterface` allowing the application to decouple search logic from iteration loops, adhering to pure OOP encapsulation rather than complicated Specification Patterns.

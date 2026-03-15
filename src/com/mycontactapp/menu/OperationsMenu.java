@@ -2,6 +2,7 @@ package com.mycontactapp.menu;
 
 import com.mycontactapp.contact.Contact;
 import com.mycontactapp.contact.ContactService;
+import com.mycontactapp.contact.ContactGroup;
 import com.mycontactapp.search.FilterService;
 import com.mycontactapp.search.SearchFilterService;
 import com.mycontactapp.search.SearchFilterInterface;
@@ -61,10 +62,17 @@ public class OperationsMenu {
                     System.out.println("No valid contacts selected.");
                     return;
                 }
-                System.out.print("WARNING: Permanently delete " + toDelete.size() + " contacts? (yes/no): ");
+                
+                ContactGroup group = new ContactGroup("Bulk Delete Target");
+                for (Contact c : toDelete) {
+                    group.add(c);
+                }
+                
+                System.out.print("WARNING: Soft delete " + toDelete.size() + " contacts? (yes/no): ");
                 if (scanner.nextLine().trim().equalsIgnoreCase("yes")) {
-                    int deletedCount = contactService.bulkDeleteContacts(toDelete);
-                    System.out.println("Successfully deleted " + deletedCount + " contacts.");
+                    group.setActive(false);
+                    contactService.saveAllContacts();
+                    System.out.println("Successfully deleted contacts.");
                 } else {
                     System.out.println("Bulk deletion cancelled.");
                 }
@@ -75,7 +83,12 @@ public class OperationsMenu {
                 String filename = scanner.nextLine().trim();
                 if (filename.isEmpty()) filename = "exported_contacts.csv";
 
-                if (FileHandler.exportContactsToCSV(userContacts, filename)) {
+                ContactGroup allContactsGroup = new ContactGroup("Export Group");
+                for (Contact c : userContacts) {
+                    allContactsGroup.add(c);
+                }
+
+                if (FileHandler.exportContactsToCSV(allContactsGroup.getAsContactList(), filename)) {
                     System.out.println("Contacts successfully exported to " + filename);
                 }
             }
@@ -105,16 +118,18 @@ public class OperationsMenu {
                 System.out.print("Enter tag to apply: ");
                 String newTag = scanner.nextLine().trim();
 
-                int taggedCount = 0;
+                ContactGroup tagGroup = new ContactGroup("Bulk Tag Target");
                 for (Contact c : toTag) {
-                    try {
-                        contactService.addTagToContact(c, newTag);
-                        taggedCount++;
-                    } catch (Exception e) {
-                        System.err.println("Failed to tag " + c.getName() + ": " + e.getMessage());
-                    }
+                    tagGroup.add(c);
                 }
-                System.out.println("Successfully tagged " + taggedCount + " contacts.");
+
+                try {
+                    tagGroup.addTag(new com.mycontactapp.tagging.Tag(newTag));
+                    contactService.saveAllContacts();
+                    System.out.println("Successfully tagged " + toTag.size() + " contacts.");
+                } catch (Exception e) {
+                    System.err.println("Failed to tag group: " + e.getMessage());
+                }
             }
             default -> System.out.println("Invalid option.");
         }
