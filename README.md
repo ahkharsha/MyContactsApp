@@ -13,8 +13,9 @@ A Java-based console application for contact management, designed using clean, s
 * **Singleton Session Control:** Implemented a centralized `SessionManager` Singleton to manage authenticated user state consistently across login, logout, and account-deletion flows without duplicating session logic in the UI layer.
 
 ### UC3: User Profile Management
-* **State Modification:** Implemented strict setter logic to allow users to update their profile names while preventing invalid states (e.g., null or empty strings).
-* **Security Best Practices:** Created a secure password update flow that actively requires hashing and verifying the current password before allowing state changes to the new password.
+* **Command Pattern Integration:** Re-architected user profile operations (Name Update, Email Update, Password Change) into distinct `UserCommand` execution objects managed by a centralized `ProfileUpdateInvoker`, effectively decoupling input logic from business state mutations.
+* **Encapsulated Security Workflow:** Packaged security workflows, such as verifying the existing password before permitting a state transition to a new password, cleanly into an isolated command execution to ensure safety standards remain robust.
+
 
 ### UC4: Create Contact
 * **Polymorphic Data Models:** Designed a hierarchical model containing an abstract `Contact` base class extended by `Person` and `Organization`, leveraging collections to store multi-value data like phone numbers and emails.

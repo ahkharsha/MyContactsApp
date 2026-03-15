@@ -6,6 +6,10 @@ import com.mycontactapp.auth.OAuth;
 import com.mycontactapp.auth.SessionManager;
 import com.mycontactapp.exception.ContactAppException;
 import com.mycontactapp.user.UserService;
+import com.mycontactapp.user.command.ChangePasswordCommand;
+import com.mycontactapp.user.command.ProfileUpdateInvoker;
+import com.mycontactapp.user.command.UpdateEmailCommand;
+import com.mycontactapp.user.command.UpdateNameCommand;
 import com.mycontactapp.user.model.User;
 
 import java.util.Optional;
@@ -88,6 +92,7 @@ public class AuthMenu {
      * @return true if the user account was deleted, false otherwise
      */
     public static boolean profileMenu(UserService userService, Scanner scanner, User loggedInUser) {
+        ProfileUpdateInvoker invoker = new ProfileUpdateInvoker();
         System.out.println("\n-- Profile Options --");
         System.out.println("1. Update Name");
         System.out.println("2. Change Password");
@@ -100,17 +105,17 @@ public class AuthMenu {
             case "1" -> {
                 System.out.print("Enter new name: ");
                 try {
-                    userService.updateUserProfile(loggedInUser, scanner.nextLine());
+                    invoker.executeCommand(new UpdateNameCommand(userService, loggedInUser, scanner.nextLine()));
                     System.out.println("Name updated.");
                 } catch (ContactAppException e) {
                     System.err.println(e.getMessage());
                 }
             }
-            case "2" -> changePasswordFlow(userService, scanner, loggedInUser);
+            case "2" -> changePasswordFlow(userService, scanner, loggedInUser, invoker);
             case "3" -> {
                 System.out.print("Enter new email: ");
                 try {
-                    userService.updateUserEmail(loggedInUser, scanner.nextLine());
+                    invoker.executeCommand(new UpdateEmailCommand(userService, loggedInUser, scanner.nextLine()));
                     System.out.println("Email updated.");
                 } catch (ContactAppException e) {
                     System.err.println(e.getMessage());
@@ -138,13 +143,13 @@ public class AuthMenu {
      * @param userService   The service to perform updates
      * @param scanner       The input scanner
      * @param loggedInUser  The logged-in user
+     * @param invoker       The profile update invoker
      */
-    private static void changePasswordFlow(UserService userService, Scanner scanner, User loggedInUser) {
+    private static void changePasswordFlow(UserService userService, Scanner scanner, User loggedInUser, ProfileUpdateInvoker invoker) {
         System.out.print("\nEnter your CURRENT password: "); String currentPassword = scanner.nextLine();
+        System.out.print("Enter your NEW password (min 6 chars): "); String newPassword = scanner.nextLine();
         try {
-            userService.verifyCurrentPassword(loggedInUser, currentPassword);
-            System.out.print("Enter your NEW password (min 6 chars): ");
-            userService.changeUserPassword(loggedInUser, scanner.nextLine());
+            invoker.executeCommand(new ChangePasswordCommand(userService, loggedInUser, currentPassword, newPassword));
             System.out.println("Password changed successfully!");
         } catch (ContactAppException e) { System.err.println("Password Change Failed: " + e.getMessage()); }
     }
