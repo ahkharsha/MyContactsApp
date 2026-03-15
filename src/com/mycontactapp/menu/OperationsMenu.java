@@ -11,6 +11,7 @@ import com.mycontactapp.search.SearchFilterService;
 import com.mycontactapp.search.SearchFilterInterface;
 import com.mycontactapp.search.chain.SearchHandler;
 import com.mycontactapp.search.specification.Specification;
+import com.mycontactapp.tagging.TagFactory;
 import com.mycontactapp.user.model.User;
 import com.mycontactapp.util.FileHandler;
 
@@ -129,7 +130,7 @@ public class OperationsMenu {
                 }
 
                 try {
-                    tagGroup.addTag(new com.mycontactapp.tagging.Tag(newTag));
+                    tagGroup.addTag(TagFactory.getTag(newTag));
                     contactService.saveAllContacts();
                     System.out.println("Successfully tagged " + toTag.size() + " contacts.");
                 } catch (Exception e) {

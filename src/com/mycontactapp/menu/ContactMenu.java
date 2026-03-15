@@ -10,6 +10,7 @@ import com.mycontactapp.contact.command.ModifyContactCommand;
 import com.mycontactapp.exception.ContactAppException;
 import com.mycontactapp.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
 
@@ -155,17 +156,25 @@ public class ContactMenu {
                         }
                         case "4" -> {
                             System.out.print("Enter tag to add (e.g., Work, Family): ");
-                            String tag = scanner.nextLine();
+                            String tagStr = scanner.nextLine().trim();
+                            if (tagStr.isEmpty()) {
+                                System.out.println("Tag cannot be empty.");
+                                break; // Use break to exit the switch case
+                            }
                             invoker.executeCommand(new ModifyContactCommand(selectedContact, contactService, c -> {
-                                try { contactService.addTagToContact(c, tag); } catch (ContactAppException e) { throw new RuntimeException(e); }
+                                try { contactService.addTagToContact(c, tagStr); } catch (ContactAppException e) { throw new RuntimeException(e); }
                             }));
                             System.out.println("Tag added.");
                         }
                         case "5" -> {
                             System.out.print("Enter tag to remove: ");
-                            String tag = scanner.nextLine();
+                            String tagStr = scanner.nextLine().trim();
+                            if (tagStr.isEmpty()) {
+                                System.out.println("Tag cannot be empty.");
+                                break; // Use break to exit the switch case
+                            }
                             invoker.executeCommand(new ModifyContactCommand(selectedContact, contactService, c -> {
-                                try { contactService.removeTagFromContact(c, tag); } catch (ContactAppException e) { throw new RuntimeException(e); }
+                                try { contactService.removeTagFromContact(c, tagStr); } catch (ContactAppException e) { throw new RuntimeException(e); }
                             }));
                             System.out.println("Tag removed (if it existed).");
                         }

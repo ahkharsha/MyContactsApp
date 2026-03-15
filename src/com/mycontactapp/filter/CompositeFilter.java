@@ -8,12 +8,14 @@ import java.util.List;
 /**
  * CompositeFilter
  * Implements the Composite Pattern to allow multiple ContactFilters to be combined.
- * It applies each filter sequentially.
+ * It acts as a single ContactFilter but internally iterates over a collection
+ * of other filters, enabling multi-level query pipelines.
  *
  * @author Developer
  * @version 1.0
  */
 public class CompositeFilter implements ContactFilter {
+    // The collection of filtering strategies to execute
     private final List<ContactFilter> filters = new ArrayList<>();
 
     /**

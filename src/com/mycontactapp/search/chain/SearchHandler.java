@@ -13,6 +13,7 @@ import com.mycontactapp.search.SearchFilterInterface;
  * @version 1.0
  */
 public abstract class SearchHandler implements SearchFilterInterface {
+    // Reference to the next handler in the pipeline
     protected SearchHandler next;
 
     /**

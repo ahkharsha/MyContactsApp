@@ -48,6 +48,7 @@ A Java-based console application for contact management, designed using clean, s
 
 ### UC11: Create and Manage Tags
 * **Object Identity & Uniqueness:** Created a custom `Tag` class that strictly overrides `equals()` and `hashCode()` to ensure identical string inputs (e.g., "work" and "Work") are evaluated as the same object in memory.
+* **Memory Optimization:** Leveraged the `Flyweight` pattern through the `TagFactory` which caches and serves unified instances of `Tag` strings. This ensures millions of contacts sharing the "family" tag will fundamentally point to a single object in RAM rather than duplicating the string memory heap.
 * **Collection Modeling:** Integrated a `Set<Tag>` relationship inside the abstract `Contact` model to enforce tag uniqueness per contact, and built a dynamic extraction method in the service layer to pull a master list of unique tags across all user contacts.
 
 ### UC12: Apply Tags to Contacts

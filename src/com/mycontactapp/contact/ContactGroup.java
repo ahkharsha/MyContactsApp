@@ -6,15 +6,19 @@ import java.util.List;
 
 /**
  * ContactGroup
- * The Composite node in the Composite Pattern.
- * Manages a collection of ContactComponents and delegates operations to them.
+ * Implements the Composite Pattern to represent a structural group of ContactComponents.
+ * This class allows the system to treat a single contact and a group of contacts
+ * identically, enabling bulk operations (like bulk tagging or deletion) effortlessly.
  *
  * @author Developer
  * @version 1.0
  */
 public class ContactGroup implements ContactComponent {
-    private final String groupName;
-    private final List<ContactComponent> components;
+    // Name parameter for the group (e.g., "Export Group", "Bulk Delete Target")
+    private String groupName;
+    
+    // The collection of child components (Can hold single Contacts or nested ContactGroups)
+    private List<ContactComponent> components;
 
     public ContactGroup(String groupName) {
         this.groupName = groupName;
@@ -34,6 +38,11 @@ public class ContactGroup implements ContactComponent {
         return groupName;
     }
 
+    /**
+     * Adds a tag to every child component within this group.
+     * This is an example of delegating operations down the Composite tree.
+     * @param tag The tag to apply
+     */
     @Override
     public void addTag(Tag tag) {
         for (ContactComponent component : components) {
@@ -41,6 +50,10 @@ public class ContactGroup implements ContactComponent {
         }
     }
 
+    /**
+     * Removes a tag from every child component within this group.
+     * @param tag The tag to remove
+     */
     @Override
     public void removeTag(Tag tag) {
         for (ContactComponent component : components) {
@@ -48,24 +61,37 @@ public class ContactGroup implements ContactComponent {
         }
     }
 
+    /**
+     * Sets the active status (soft delete) of all children within this group.
+     * @param active The status to set (false to soft-delete)
+     */
     @Override
-    public void setActive(boolean isActive) {
+    public void setActive(boolean active) {
         for (ContactComponent component : components) {
-            component.setActive(isActive);
+            component.setActive(active);
         }
     }
 
+    /**
+     * Gathers and returns formatted details from all children conceptually.
+     * Note: Typically a group might header its name, then iterate children formats.
+     * @return Formatted string overview of the group
+     */
     @Override
     public String getFormattedDetails() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("=== Group: ").append(groupName).append(" ===\n");
+        StringBuilder sb = new StringBuilder("Group: " + groupName + "\n");
         for (ContactComponent component : components) {
-            builder.append(component.getFormattedDetails()).append("\n");
+            sb.append(component.getFormattedDetails()).append("\n");
         }
-        builder.append("=======================\n");
-        return builder.toString();
+        return sb.toString();
     }
 
+    /**
+     * Flattens the entire composite tree into a single list of concrete Contacts.
+     * This ensures groups can be easily exported or passed to legacy methods
+     * requiring standard Lists.
+     * @return A flattened list of all underlying Contact objects.
+     */
     @Override
     public List<Contact> getAsContactList() {
         List<Contact> flatList = new ArrayList<>();

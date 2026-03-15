@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.mycontactapp.tagging.TagFactory;
+
 /**
  * ContactService
  * Manages core contact operations such as creation and data retrieval.
@@ -153,7 +155,7 @@ public class ContactService implements ContactDeletionSubject {
      */
     public void addTagToContact(Contact contact, String tagName) throws ContactAppException {
         try {
-            contact.addTag(new Tag(tagName));
+            contact.addTag(TagFactory.getTag(tagName));
             saveAllContacts();
         } catch (IllegalArgumentException e) {
             throw new ContactAppException(e.getMessage());
@@ -168,7 +170,7 @@ public class ContactService implements ContactDeletionSubject {
      */
     public void removeTagFromContact(Contact contact, String tagName) throws ContactAppException {
         try {
-            contact.removeTag(new Tag(tagName));
+            contact.removeTag(TagFactory.getTag(tagName));
             saveAllContacts();
         } catch (IllegalArgumentException e) {
             throw new ContactAppException(e.getMessage());
