@@ -39,8 +39,8 @@ A Java-based console application for contact management, designed using clean, s
 * **Streamlined Bulk Delegation:** Refactored `OperationsMenu` to rely on the `ContactGroup` rather than managing iterations directly, enabling the seamless execution of bulk tagging, deletion, and exportation uniformly across grouped subsets of data.
 
 ### UC9: Search Contacts
-* **Search Interface:** Implemented a clean `SearchFilterInterface` allowing the application to decouple search logic from iteration loops, adhering to pure OOP encapsulation rather than complicated Specification Patterns.
-* **String Comparison Implementations:** Built individual static classes mapping to Name, Phone, and Email search types, securely utilizing core Java String methods (`equals()`, `toLowerCase()`, `contains()`) combined with nested iteration and conditional filtering logic.
+* **Logical Combinations:** Implemented the `Specification` Pattern, transforming simple query strategies into combinable objects that support logical `AND`/`OR` chaining, allowing users to build complex searches (e.g., matching a specific Name substring AND a specific Tag) seamlessly.
+* **Cascading Queries:** Developed a `SearchHandler` abstract pipeline utilizing the Chain of Responsibility Pattern. This enables "Global Search" functionality that passes a user's query through a cascade of evaluators (Name -> Phone -> Email) until a match is found.
 
 ### UC11: Create and Manage Tags
 * **Object Identity & Uniqueness:** Created a custom `Tag` class that strictly overrides `equals()` and `hashCode()` to ensure identical string inputs (e.g., "work" and "Work") are evaluated as the same object in memory.

@@ -6,6 +6,8 @@ import com.mycontactapp.contact.ContactGroup;
 import com.mycontactapp.search.FilterService;
 import com.mycontactapp.search.SearchFilterService;
 import com.mycontactapp.search.SearchFilterInterface;
+import com.mycontactapp.search.chain.SearchHandler;
+import com.mycontactapp.search.specification.Specification;
 import com.mycontactapp.user.model.User;
 import com.mycontactapp.util.FileHandler;
 
@@ -148,26 +150,57 @@ public class OperationsMenu {
         System.out.println("2. Search by Phone");
         System.out.println("3. Search by Email");
         System.out.println("4. Search by Tag"); 
+        System.out.println("5. Complex Search (Name AND Tag) [Specification Pattern]");
+        System.out.println("6. Global Search Any Field [Chain of Responsibility]");
         System.out.print("Choose search type: ");
         String searchType = scanner.nextLine();
 
-        System.out.print("Enter search query: ");
-        String query = scanner.nextLine();
+        SearchFilterInterface criteria = null;
+        String query = "";
 
-        List<Contact> userContacts = contactService.getUserContacts(loggedInUser);
-        SearchFilterInterface criteria;
-
-        switch (searchType) {
-            case "1" -> criteria = new SearchFilterService.NameSearch();
-            case "2" -> criteria = new SearchFilterService.PhoneSearch();
-            case "3" -> criteria = new SearchFilterService.EmailSearch();
-            case "4" -> criteria = new SearchFilterService.TagSearch();
-            default -> {
-                System.out.println("Invalid search type selected.");
-                return;
+        if (searchType.equals("5")) {
+            System.out.print("Enter name fragment: ");
+            String nameQuery = scanner.nextLine();
+            System.out.print("Enter tag exact match: ");
+            String tagQuery = scanner.nextLine();
+            
+            Specification nameSpec = new SearchFilterService.NameSearch();
+            Specification tagSpec = new SearchFilterService.TagSearch();
+            
+            // Reusing criteria reference via an anonymous class to pass dual queries
+            criteria = new SearchFilterInterface() {
+                @Override
+                public boolean matches(Contact contact, String ignored) {
+                    return nameSpec.matches(contact, nameQuery) && tagSpec.matches(contact, tagQuery);
+                }
+            };
+        } else if (searchType.equals("6")) {
+            System.out.print("Enter search term (will check name, then phone, then email): ");
+            query = scanner.nextLine();
+            
+            SearchHandler nameHandler = new SearchFilterService.NameMatchHandler();
+            SearchHandler phoneHandler = new SearchFilterService.PhoneMatchHandler();
+            SearchHandler emailHandler = new SearchFilterService.EmailMatchHandler();
+            
+            // Chain them
+            nameHandler.setNext(phoneHandler).setNext(emailHandler);
+            criteria = nameHandler;
+        } else {
+            System.out.print("Enter search query: ");
+            query = scanner.nextLine();
+            switch (searchType) {
+                case "1" -> criteria = new SearchFilterService.NameSearch();
+                case "2" -> criteria = new SearchFilterService.PhoneSearch();
+                case "3" -> criteria = new SearchFilterService.EmailSearch();
+                case "4" -> criteria = new SearchFilterService.TagSearch();
+                default -> {
+                    System.out.println("Invalid search type selected.");
+                    return;
+                }
             }
         }
 
+        List<Contact> userContacts = contactService.getUserContacts(loggedInUser);
         List<Contact> results = searchService.search(userContacts, query, criteria);
 
         System.out.println("\nSearch Results (" + results.size() + " found):");

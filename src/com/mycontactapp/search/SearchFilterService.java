@@ -1,17 +1,19 @@
 package com.mycontactapp.search;
 
 import com.mycontactapp.contact.Contact;
+import com.mycontactapp.search.chain.SearchHandler;
+import com.mycontactapp.search.specification.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * SearchFilterService
- * Handles the logic for searching contacts using various criteria.
- * Demonstrates standard for-loops and String comparison methods.
+ * Handle logic for searching contacts using various criteria.
+ * Demonstrates Specification Pattern and Chain of Responsibility.
  *
  * @author Developer
- * @version 2.0
+ * @version 3.0
  */
 public class SearchFilterService {
 
@@ -37,15 +39,9 @@ public class SearchFilterService {
     }
 
     /**
-     * Strategy to search contacts by name (case-insensitive partial match).
+     * Strategy/Specification to search contacts by name.
      */
-    public static class NameSearch implements SearchFilterInterface {
-        /**
-         * Checks if the contact's name contains the query string.
-         * @param contact The contact to check
-         * @param query The name fragment to search for
-         * @return true if found, false otherwise
-         */
+    public static class NameSearch extends Specification {
         @Override
         public boolean matches(Contact contact, String query) {
             return contact.getName().toLowerCase().contains(query.toLowerCase());
@@ -53,9 +49,9 @@ public class SearchFilterService {
     }
 
     /**
-     * Strategy to search contacts by phone number (partial match).
+     * Strategy/Specification to search contacts by phone number.
      */
-    public static class PhoneSearch implements SearchFilterInterface {
+    public static class PhoneSearch extends Specification {
         /**
          * Checks if any of the contact's phone numbers contain the query string.
          * @param contact The contact to check
@@ -72,9 +68,9 @@ public class SearchFilterService {
     }
 
     /**
-     * Strategy to search contacts by email address (case-insensitive partial match).
+     * Strategy/Specification to search contacts by email address.
      */
-    public static class EmailSearch implements SearchFilterInterface {
+    public static class EmailSearch extends Specification {
         /**
          * Checks if any of the contact's email addresses contain the query string.
          * @param contact The contact to check
@@ -91,13 +87,7 @@ public class SearchFilterService {
     }
 
     // Search specifically by matching Tag objects inside the Set
-    public static class TagSearch implements SearchFilterInterface {
-        /**
-         * Checks if the contact has a tag matching the query exact name.
-         * @param contact The contact to check
-         * @param query   The tag name to search for
-         * @return true if found, false otherwise
-         */
+    public static class TagSearch extends Specification {
         @Override
         public boolean matches(Contact contact, String query) {
             try {
@@ -106,6 +96,44 @@ public class SearchFilterService {
             } catch (IllegalArgumentException e) {
                 return false; 
             }
+        }
+    }
+
+    // --- Chain of Responsibility Handlers --- //
+
+    /**
+     * Chain node that attempts to match a contact by its name.
+     */
+    public static class NameMatchHandler extends SearchHandler {
+        @Override
+        protected boolean canHandle(Contact contact, String query) {
+            return contact.getName().toLowerCase().contains(query.toLowerCase());
+        }
+    }
+
+    /**
+     * Chain node that attempts to match a contact by any of its phone numbers.
+     */
+    public static class PhoneMatchHandler extends SearchHandler {
+        @Override
+        protected boolean canHandle(Contact contact, String query) {
+            for (String phone : contact.getPhoneNumbers()) {
+                if (phone.contains(query)) return true;
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Chain node that attempts to match a contact by any of its email addresses.
+     */
+    public static class EmailMatchHandler extends SearchHandler {
+        @Override
+        protected boolean canHandle(Contact contact, String query) {
+            for (String email : contact.getEmailAddresses()) {
+                if (email.toLowerCase().contains(query.toLowerCase())) return true;
+            }
+            return false;
         }
     }
 }
