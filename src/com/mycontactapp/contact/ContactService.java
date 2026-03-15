@@ -104,6 +104,14 @@ public class ContactService {
     public void updateContactName(Contact contact, String newName) throws ContactAppException {
         if (newName == null || newName.trim().isEmpty()) throw new ContactAppException("Contact name cannot be empty.");
         contact.setName(newName);
+        saveAllContacts();
+    }
+
+    /**
+     * Persists all currently loaded contacts to storage.
+     * Useful when changes are made via generic Commands.
+     */
+    public void saveAllContacts() {
         FileHandler.saveContacts(allContacts);
     }
 
@@ -116,7 +124,7 @@ public class ContactService {
     public void addPhoneToContact(Contact contact, String newPhone) throws ContactAppException {
         if (newPhone == null || newPhone.trim().isEmpty()) throw new ContactAppException("Phone number cannot be empty.");
         contact.addPhoneNumber(newPhone);
-        FileHandler.saveContacts(allContacts);
+        saveAllContacts();
     }
 
     /**
@@ -128,7 +136,7 @@ public class ContactService {
     public void addEmailToContact(Contact contact, String newEmail) throws ContactAppException {
         if (newEmail == null || newEmail.trim().isEmpty()) throw new ContactAppException("Email address cannot be empty.");
         contact.addEmailAddress(newEmail);
-        FileHandler.saveContacts(allContacts);
+        saveAllContacts();
     }
 
     /**
@@ -140,7 +148,7 @@ public class ContactService {
     public void addTagToContact(Contact contact, String tagName) throws ContactAppException {
         try {
             contact.addTag(new Tag(tagName));
-            FileHandler.saveContacts(allContacts);
+            saveAllContacts();
         } catch (IllegalArgumentException e) {
             throw new ContactAppException(e.getMessage());
         }
@@ -155,7 +163,7 @@ public class ContactService {
     public void removeTagFromContact(Contact contact, String tagName) throws ContactAppException {
         try {
             contact.removeTag(new Tag(tagName));
-            FileHandler.saveContacts(allContacts);
+            saveAllContacts();
         } catch (IllegalArgumentException e) {
             throw new ContactAppException(e.getMessage());
         }
@@ -168,7 +176,7 @@ public class ContactService {
      */
     public boolean deleteContact(Contact contact) {
         contact.setActive(false);
-        FileHandler.saveContacts(allContacts);
+        saveAllContacts();
         return true;
     }
 
@@ -184,7 +192,7 @@ public class ContactService {
             c.setActive(false);
             count++;
         }
-        if (count > 0) FileHandler.saveContacts(allContacts);
+        if (count > 0) saveAllContacts();
         return count;
     }
 
@@ -194,7 +202,7 @@ public class ContactService {
      */
     public void incrementContactViewCount(Contact contact) {
         contact.incrementViewCount();
-        FileHandler.saveContacts(allContacts);
+        saveAllContacts();
     }
 
     /**

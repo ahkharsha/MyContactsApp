@@ -43,6 +43,15 @@ public class Organization extends Contact {
     }
 
     /**
+     * Copy constructor for creating deep clones (used by Memento).
+     * @param other The Organization contact to copy
+     */
+    public Organization(Organization other) {
+        super(other);
+        this.website = other.website;
+    }
+
+    /**
      * Gets the website URL.
      * @return The website URL
      */

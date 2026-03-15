@@ -43,6 +43,15 @@ public class Person extends Contact {
     }
 
     /**
+     * Copy constructor for creating deep clones (used by Memento).
+     * @param other The Person contact to copy
+     */
+    public Person(Person other) {
+        super(other);
+        this.relationship = other.relationship;
+    }
+
+    /**
      * Gets the relationship status.
      * @return The relationship description
      */

@@ -5,6 +5,8 @@ import com.mycontactapp.contact.ContactService;
 import com.mycontactapp.contact.decorator.ContactDisplay;
 import com.mycontactapp.contact.decorator.MaskedEmailDecorator;
 import com.mycontactapp.contact.decorator.UpperCaseDecorator;
+import com.mycontactapp.contact.command.ContactEditInvoker;
+import com.mycontactapp.contact.command.ModifyContactCommand;
 import com.mycontactapp.exception.ContactAppException;
 import com.mycontactapp.user.model.User;
 
@@ -109,44 +111,80 @@ public class ContactMenu {
             Contact selectedContact = userContacts.get(index);
             contactService.incrementContactViewCount(selectedContact); // Increment view count when opening for edit
             
-            System.out.println("\nEditing: " + selectedContact.getName());
-            System.out.println("1. Update Name");
-            System.out.println("2. Add Phone Number");
-            System.out.println("3. Add Email Address");
-            System.out.println("4. Add Tag");
-            System.out.println("5. Remove Tag");
-            System.out.print("What would you like to update? ");
+            ContactEditInvoker invoker = new ContactEditInvoker();
+            boolean editing = true;
             
-            String editChoice = scanner.nextLine();
-            switch (editChoice) {
-                case "1" -> {
-                    System.out.print("Enter new name: ");
-                    contactService.updateContactName(selectedContact, scanner.nextLine());
-                    System.out.println("Contact name updated.");
+            while (editing) {
+                System.out.println("\nEditing: " + selectedContact.getName());
+                System.out.println("1. Update Name");
+                System.out.println("2. Add Phone Number");
+                System.out.println("3. Add Email Address");
+                System.out.println("4. Add Tag");
+                System.out.println("5. Remove Tag");
+                System.out.println("6. Undo Last Edit " + (invoker.canUndo() ? "(Available)" : ""));
+                System.out.println("7. Redo Last Edit " + (invoker.canRedo() ? "(Available)" : ""));
+                System.out.println("8. Done Editing");
+                System.out.print("What would you like to update? ");
+                
+                String editChoice = scanner.nextLine();
+                try {
+                    switch (editChoice) {
+                        case "1" -> {
+                            System.out.print("Enter new name: ");
+                            String newName = scanner.nextLine();
+                            invoker.executeCommand(new ModifyContactCommand(selectedContact, contactService, c -> {
+                                try { contactService.updateContactName(c, newName); } catch (ContactAppException e) { throw new RuntimeException(e); }
+                            }));
+                            System.out.println("Contact name updated.");
+                        }
+                        case "2" -> {
+                            System.out.print("Enter new phone number: ");
+                            String newPhone = scanner.nextLine();
+                            invoker.executeCommand(new ModifyContactCommand(selectedContact, contactService, c -> {
+                                try { contactService.addPhoneToContact(c, newPhone); } catch (ContactAppException e) { throw new RuntimeException(e); }
+                            }));
+                            System.out.println("Phone number added.");
+                        }
+                        case "3" -> {
+                            System.out.print("Enter new email address: ");
+                            String newEmail = scanner.nextLine();
+                            invoker.executeCommand(new ModifyContactCommand(selectedContact, contactService, c -> {
+                                try { contactService.addEmailToContact(c, newEmail); } catch (ContactAppException e) { throw new RuntimeException(e); }
+                            }));
+                            System.out.println("Email address added.");
+                        }
+                        case "4" -> {
+                            System.out.print("Enter tag to add (e.g., Work, Family): ");
+                            String tag = scanner.nextLine();
+                            invoker.executeCommand(new ModifyContactCommand(selectedContact, contactService, c -> {
+                                try { contactService.addTagToContact(c, tag); } catch (ContactAppException e) { throw new RuntimeException(e); }
+                            }));
+                            System.out.println("Tag added.");
+                        }
+                        case "5" -> {
+                            System.out.print("Enter tag to remove: ");
+                            String tag = scanner.nextLine();
+                            invoker.executeCommand(new ModifyContactCommand(selectedContact, contactService, c -> {
+                                try { contactService.removeTagFromContact(c, tag); } catch (ContactAppException e) { throw new RuntimeException(e); }
+                            }));
+                            System.out.println("Tag removed (if it existed).");
+                        }
+                        case "6" -> {
+                            if (invoker.undoLastCommand()) System.out.println("Undo successful.");
+                            else System.out.println("Nothing to undo.");
+                        }
+                        case "7" -> {
+                            if (invoker.redoLastCommand()) System.out.println("Redo successful.");
+                            else System.out.println("Nothing to redo.");
+                        }
+                        case "8" -> editing = false;
+                        default -> System.out.println("Invalid option.");
+                    }
+                } catch (RuntimeException e) {
+                    System.err.println("Edit Failed: " + e.getCause().getMessage());
                 }
-                case "2" -> {
-                    System.out.print("Enter new phone number: ");
-                    contactService.addPhoneToContact(selectedContact, scanner.nextLine());
-                    System.out.println("Phone number added.");
-                }
-                case "3" -> {
-                    System.out.print("Enter new email address: ");
-                    contactService.addEmailToContact(selectedContact, scanner.nextLine());
-                    System.out.println("Email address added.");
-                }
-                case "4" -> {
-                    System.out.print("Enter tag to add (e.g., Work, Family): ");
-                    contactService.addTagToContact(selectedContact, scanner.nextLine());
-                    System.out.println("Tag added.");
-                }
-                case "5" -> {
-                    System.out.print("Enter tag to remove: ");
-                    contactService.removeTagFromContact(selectedContact, scanner.nextLine());
-                    System.out.println("Tag removed (if it existed).");
-                }
-                default -> System.out.println("Invalid option.");
             }
-        } catch (NumberFormatException e) { System.out.println("Please enter a valid number."); } catch (ContactAppException e) { System.err.println("Edit Failed: " + e.getMessage()); }
+        } catch (NumberFormatException e) { System.out.println("Please enter a valid number."); } 
     }
 
     /**

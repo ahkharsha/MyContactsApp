@@ -1,6 +1,7 @@
 package com.mycontactapp.contact;
 
 import com.mycontactapp.contact.decorator.ContactDisplay;
+import com.mycontactapp.contact.memento.ContactMemento;
 import com.mycontactapp.tagging.Tag;
 
 import java.time.LocalDateTime;
@@ -68,6 +69,51 @@ public abstract class Contact implements ContactDisplay {
         this.tags = new HashSet<>();
         this.viewCount = viewCount;
         this.isActive = isActive;
+    }
+
+    /**
+     * Copy constructor for creating deep clones (used by Memento).
+     * @param other The contact to copy
+     */
+    public Contact(Contact other) {
+        this.contactId = other.contactId;
+        this.userId = other.userId;
+        this.name = other.name;
+        // Deep copy lists/sets to ensure mutations don't leak across snapshots
+        this.phoneNumbers = new ArrayList<>(other.phoneNumbers);
+        this.emailAddresses = new ArrayList<>(other.emailAddresses);
+        this.tags = new HashSet<>();
+        for (Tag t : other.tags) {
+            this.tags.add(new Tag(t.getName()));
+        }
+        this.createdAt = other.createdAt;
+        this.viewCount = other.viewCount;
+        this.isActive = other.isActive;
+    }
+
+    /**
+     * Creates a Memento capturing the current state of this contact.
+     * @return A ContactMemento containing a snapshot
+     */
+    public ContactMemento saveState() {
+        return new ContactMemento(this);
+    }
+
+    /**
+     * Restores the state of this contact from a Memento.
+     * @param memento The previously saved snapshot
+     */
+    public void restoreState(ContactMemento memento) {
+        Contact snapshot = memento.getState();
+        this.name = snapshot.getName();
+        this.phoneNumbers = new ArrayList<>(snapshot.getPhoneNumbers());
+        this.emailAddresses = new ArrayList<>(snapshot.getEmailAddresses());
+        this.tags = new HashSet<>();
+        for (Tag t : snapshot.getTags()) {
+            this.tags.add(new Tag(t.getName()));
+        }
+        this.viewCount = snapshot.getViewCount();
+        this.isActive = snapshot.isActive();
     }
 
     /**
