@@ -4,6 +4,7 @@ import com.mycontactapp.auth.SessionManager;
 import com.mycontactapp.contact.ContactService;
 import com.mycontactapp.contact.observer.AuditLogObserver;
 import com.mycontactapp.menu.AuthMenu;
+import com.mycontactapp.menu.ConsoleTagObserver;
 import com.mycontactapp.menu.ContactMenu;
 import com.mycontactapp.menu.OperationsMenu;
 import com.mycontactapp.search.FilterService;
@@ -31,6 +32,7 @@ public class MyContactsApp {
     static {
         // Register Observers
         contactService.addObserver(new AuditLogObserver());
+        contactService.addTagObserver(new ConsoleTagObserver());
     }
 
     /**

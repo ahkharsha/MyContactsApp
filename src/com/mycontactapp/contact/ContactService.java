@@ -4,6 +4,8 @@ import com.mycontactapp.contact.builder.ContactBuilder;
 import com.mycontactapp.contact.factory.ContactFactory;
 import com.mycontactapp.contact.observer.ContactDeletionObserver;
 import com.mycontactapp.contact.observer.ContactDeletionSubject;
+import com.mycontactapp.tagging.observer.TagChangeObserver;
+import com.mycontactapp.tagging.observer.TagChangeSubject;
 import com.mycontactapp.exception.ContactAppException;
 import com.mycontactapp.tagging.Tag;
 import com.mycontactapp.user.model.User;
@@ -25,11 +27,12 @@ import com.mycontactapp.tagging.TagFactory;
  * @author Developer
  * @version 8.0
  */
-public class ContactService implements ContactDeletionSubject {
+public class ContactService implements ContactDeletionSubject, TagChangeSubject {
     
     private final List<Contact> allContacts;
     private final ContactFactory contactFactory;
     private final List<ContactDeletionObserver> observers;
+    private final List<TagChangeObserver> tagObservers;
 
     /**
      * Constructs a new ContactService and loads existing contacts from file.
@@ -38,6 +41,7 @@ public class ContactService implements ContactDeletionSubject {
         this.allContacts = FileHandler.loadContacts();
         this.contactFactory = new ContactFactory();
         this.observers = new ArrayList<>();
+        this.tagObservers = new ArrayList<>();
     }
 
     /**
@@ -155,7 +159,9 @@ public class ContactService implements ContactDeletionSubject {
      */
     public void addTagToContact(Contact contact, String tagName) throws ContactAppException {
         try {
-            contact.addTag(TagFactory.getTag(tagName));
+            Tag newTag = TagFactory.getTag(tagName);
+            contact.addTag(newTag);
+            notifyTagAdded(contact, newTag);
             saveAllContacts();
         } catch (IllegalArgumentException e) {
             throw new ContactAppException(e.getMessage());
@@ -170,7 +176,9 @@ public class ContactService implements ContactDeletionSubject {
      */
     public void removeTagFromContact(Contact contact, String tagName) throws ContactAppException {
         try {
-            contact.removeTag(TagFactory.getTag(tagName));
+            Tag targetTag = TagFactory.getTag(tagName);
+            contact.removeTag(targetTag);
+            notifyTagRemoved(contact, targetTag);
             saveAllContacts();
         } catch (IllegalArgumentException e) {
             throw new ContactAppException(e.getMessage());
@@ -272,6 +280,34 @@ public class ContactService implements ContactDeletionSubject {
     public void notifyObservers(Contact contact, boolean isHardDelete) {
         for (ContactDeletionObserver observer : observers) {
             observer.onContactDeleted(contact, isHardDelete);
+        }
+    }
+
+    // --- Tag Observer Pattern Methods --- \\
+
+    @Override
+    public void addTagObserver(TagChangeObserver observer) {
+        if (!tagObservers.contains(observer)) {
+            tagObservers.add(observer);
+        }
+    }
+
+    @Override
+    public void removeTagObserver(TagChangeObserver observer) {
+        tagObservers.remove(observer);
+    }
+
+    @Override
+    public void notifyTagAdded(Contact contact, Tag tag) {
+        for (TagChangeObserver observer : tagObservers) {
+            observer.onTagAdded(contact, tag);
+        }
+    }
+
+    @Override
+    public void notifyTagRemoved(Contact contact, Tag tag) {
+        for (TagChangeObserver observer : tagObservers) {
+            observer.onTagRemoved(contact, tag);
         }
     }
 }

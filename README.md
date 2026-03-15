@@ -52,12 +52,14 @@ A Java-based console application for contact management, designed using clean, s
 * **Collection Modeling:** Integrated a `Set<Tag>` relationship inside the abstract `Contact` model to enforce tag uniqueness per contact, and built a dynamic extraction method in the service layer to pull a master list of unique tags across all user contacts.
 
 ### UC12: Apply Tags to Contacts
-* **Object Relationships:** Actively utilized the `Set<Tag>` relationship within the `Contact` model, allowing users to safely assign and revoke multiple unique tags per contact via the main console loop.
+* **Reactive UI Updates:** Implemented the `Observer` pattern via `TagChangeSubject` and `TagChangeObserver` interfaces, enabling `ContactService` to asynchronously fire UI notifications whenever a tag is added or removed from a contact's `Set<Tag>`, decoupling core logic from console I/O.
 * **Polymorphic Search Expansion:** Completed the `SearchFilterInterface` hierarchy by introducing a `TagSearch` implementation, securely leveraging the `contains()` method on the Java `Set` collection to locate specific tags efficiently.
 
 ## Tech Stack
 * Java
+* JUnit (Testing)
 
 ## How to Run
-1. Open the project in your IDE.
-2. Run the `MyContactsApp.java` main class.
+1. Open the project in your Eclipse IDE.
+2. Navigate to `src/com/mycontactapp/main/MyContactsApp.java` and run it as a Java Application.
+3. **To run tests:** Navigate to `test/com/mycontactapp/main/MyContactsAppTest.java` and run it as a JUnit test suite.

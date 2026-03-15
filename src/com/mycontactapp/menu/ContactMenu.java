@@ -10,7 +10,6 @@ import com.mycontactapp.contact.command.ModifyContactCommand;
 import com.mycontactapp.exception.ContactAppException;
 import com.mycontactapp.user.model.User;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
 

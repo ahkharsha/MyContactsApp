@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Contact
@@ -24,8 +25,8 @@ public abstract class Contact implements ContactDisplay, ContactComponent {
     private final String contactId;
     private final String userId; 
     private String name;
-    private List<String> phoneNumbers;
-    private List<String> emailAddresses;
+    private List<PhoneNumber> phoneNumbers;
+    private List<Email> emailAddresses;
     private final LocalDateTime createdAt;
     private Set<Tag> tags;
     private int viewCount;
@@ -63,8 +64,8 @@ public abstract class Contact implements ContactDisplay, ContactComponent {
         this.contactId = contactId;
         this.userId = userId;
         this.name = name;
-        this.phoneNumbers = phones;
-        this.emailAddresses = emails;
+        this.phoneNumbers = phones != null ? phones.stream().map(PhoneNumber::new).collect(Collectors.toList()) : new ArrayList<>();
+        this.emailAddresses = emails != null ? emails.stream().map(Email::new).collect(Collectors.toList()) : new ArrayList<>();
         this.createdAt = createdAt;
         this.tags = new HashSet<>();
         this.viewCount = viewCount;
@@ -80,8 +81,8 @@ public abstract class Contact implements ContactDisplay, ContactComponent {
         this.userId = other.userId;
         this.name = other.name;
         // Deep copy lists/sets to ensure mutations don't leak across snapshots
-        this.phoneNumbers = new ArrayList<>(other.phoneNumbers);
-        this.emailAddresses = new ArrayList<>(other.emailAddresses);
+        this.phoneNumbers = other.phoneNumbers.stream().map(p -> new PhoneNumber(p.getNumber())).collect(Collectors.toList());
+        this.emailAddresses = other.emailAddresses.stream().map(e -> new Email(e.getAddress())).collect(Collectors.toList());
         this.tags = new HashSet<>();
         for (Tag t : other.tags) {
             this.tags.add(new Tag(t.getName()));
@@ -106,8 +107,8 @@ public abstract class Contact implements ContactDisplay, ContactComponent {
     public void restoreState(ContactMemento memento) {
         Contact snapshot = memento.getState();
         this.name = snapshot.getName();
-        this.phoneNumbers = new ArrayList<>(snapshot.getPhoneNumbers());
-        this.emailAddresses = new ArrayList<>(snapshot.getEmailAddresses());
+        this.phoneNumbers = snapshot.getPhoneNumbers().stream().map(PhoneNumber::new).collect(Collectors.toList());
+        this.emailAddresses = snapshot.getEmailAddresses().stream().map(Email::new).collect(Collectors.toList());
         this.tags = new HashSet<>();
         for (Tag t : snapshot.getTags()) {
             this.tags.add(new Tag(t.getName()));
@@ -142,14 +143,19 @@ public abstract class Contact implements ContactDisplay, ContactComponent {
 
     /**
      * Gets the list of phone numbers associated with the contact.
-     * @return List of phone numbers
+     * @return List of phone numbers as Strings
      */
-    public List<String> getPhoneNumbers() { return phoneNumbers; }
+    public List<String> getPhoneNumbers() { 
+        return phoneNumbers.stream().map(PhoneNumber::getNumber).collect(Collectors.toList()); 
+    }
+    
     /**
      * Gets the list of email addresses associated with the contact.
-     * @return List of email addresses
+     * @return List of email addresses as Strings
      */
-    public List<String> getEmailAddresses() { return emailAddresses; }
+    public List<String> getEmailAddresses() { 
+        return emailAddresses.stream().map(Email::getAddress).collect(Collectors.toList()); 
+    }
 
     /**
      * Gets the set of tags associated with the contact.
@@ -194,13 +200,13 @@ public abstract class Contact implements ContactDisplay, ContactComponent {
      * Adds a phone number to the contact.
      * @param phone The phone number to add
      */
-    public void addPhoneNumber(String phone) { this.phoneNumbers.add(phone); }
+    public void addPhoneNumber(String phone) { this.phoneNumbers.add(new PhoneNumber(phone)); }
 
     /**
      * Adds an email address to the contact.
      * @param email The email address to add
      */
-    public void addEmailAddress(String email) { this.emailAddresses.add(email); }
+    public void addEmailAddress(String email) { this.emailAddresses.add(new Email(email)); }
 
     /**
      * Adds a tag to the contact.
@@ -223,11 +229,11 @@ public abstract class Contact implements ContactDisplay, ContactComponent {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         
         String phones = Optional.ofNullable(phoneNumbers).filter(list -> !list.isEmpty())
-                .map(list -> String.join(", ", list))
+                .map(list -> list.stream().map(PhoneNumber::getNumber).collect(Collectors.joining(", ")))
                 .orElse("No phone numbers provided");
                 
         String emails = Optional.ofNullable(emailAddresses).filter(list -> !list.isEmpty())
-                .map(list -> String.join(", ", list))
+                .map(list -> list.stream().map(Email::getAddress).collect(Collectors.joining(", ")))
                 .orElse("No email addresses provided");
 
         String tagDisplay = tags.isEmpty() ? "No Tags" : 
