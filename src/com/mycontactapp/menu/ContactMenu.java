@@ -2,6 +2,9 @@ package com.mycontactapp.menu;
 
 import com.mycontactapp.contact.Contact;
 import com.mycontactapp.contact.ContactService;
+import com.mycontactapp.contact.decorator.ContactDisplay;
+import com.mycontactapp.contact.decorator.MaskedEmailDecorator;
+import com.mycontactapp.contact.decorator.UpperCaseDecorator;
 import com.mycontactapp.exception.ContactAppException;
 import com.mycontactapp.user.model.User;
 
@@ -52,12 +55,40 @@ public class ContactMenu {
      * Display all contacts for the logged-in user.
      * @param contactService The service to retrieve contacts
      * @param loggedInUser The logged-in user
+     * @param scanner The input scanner
      */
-    public static void viewContactsFlow(ContactService contactService, User loggedInUser) {
+    public static void viewContactsFlow(ContactService contactService, User loggedInUser, Scanner scanner) {
         System.out.println("\n-- My Contacts --");
         List<Contact> userContacts = contactService.getUserContacts(loggedInUser);
-        if (userContacts.isEmpty()) { System.out.println("You have no contacts saved yet."); } 
-        else { for (int i = 0; i < userContacts.size(); i++) { System.out.println("\n[" + (i + 1) + "]"); System.out.println(userContacts.get(i).getFormattedDetails()); } }
+        if (userContacts.isEmpty()) { 
+            System.out.println("You have no contacts saved yet."); 
+            return;
+        } 
+        
+        System.out.println("Display format options:");
+        System.out.println("1. Standard Format");
+        System.out.println("2. ALL UPPERCASE");
+        System.out.println("3. Privacy Mode (Mask Emails)");
+        System.out.println("4. Ultra Privacy Mode (UPPERCASE + Mask Emails)");
+        System.out.print("Choose display format: ");
+        String formatChoice = scanner.nextLine();
+
+        for (int i = 0; i < userContacts.size(); i++) { 
+            System.out.println("\n[" + (i + 1) + "]"); 
+            
+            ContactDisplay displayContact = userContacts.get(i);
+            
+            // Apply Decorators dynamically based on user selection
+            switch (formatChoice) {
+                case "2" -> displayContact = new UpperCaseDecorator(displayContact);
+                case "3" -> displayContact = new MaskedEmailDecorator(displayContact);
+                case "4" -> displayContact = new UpperCaseDecorator(new MaskedEmailDecorator(displayContact));
+                case "1" -> {} // Standard, no decoration
+                default -> {} // Default to standard
+            }
+            
+            System.out.println(displayContact.getFormattedDetails()); 
+        }
     }
 
     /**

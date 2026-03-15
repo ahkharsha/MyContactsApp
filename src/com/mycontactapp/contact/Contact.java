@@ -1,5 +1,6 @@
 package com.mycontactapp.contact;
 
+import com.mycontactapp.contact.decorator.ContactDisplay;
 import com.mycontactapp.tagging.Tag;
 
 import java.time.LocalDateTime;
@@ -18,7 +19,7 @@ import java.util.UUID;
  * @author Developer
  * @version 3.0
  */
-public abstract class Contact {
+public abstract class Contact implements ContactDisplay {
     private final String contactId;
     private final String userId; 
     private String name;
@@ -171,6 +172,7 @@ public abstract class Contact {
      * Returns a formatted string containing the contact's details.
      * @return A string with formatted contact information
      */
+    @Override
     public String getFormattedDetails() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         

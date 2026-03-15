@@ -79,7 +79,7 @@ public class MyContactsApp {
                         }
                     }
                     case "2" -> ContactMenu.createContactFlow(contactService, scanner, loggedInUser);
-                    case "3" -> ContactMenu.viewContactsFlow(contactService, loggedInUser);
+                    case "3" -> ContactMenu.viewContactsFlow(contactService, loggedInUser, scanner);
                     case "4" -> ContactMenu.editContactFlow(contactService, scanner, loggedInUser);
                     case "5" -> ContactMenu.deleteContactFlow(contactService, scanner, loggedInUser);
                     case "6" -> OperationsMenu.bulkOperationsFlow(contactService, scanner, loggedInUser);

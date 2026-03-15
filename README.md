@@ -23,8 +23,8 @@ A Java-based console application for contact management, designed using clean, s
 
 
 ### UC5: View Contact Details
-* **Polymorphic Formatting:** Bypassed complex Decorator patterns by utilizing overridden methods within the `Contact` hierarchy to dynamically generate specific console outputs for `Person` and `Organization` types.
-* **Null Safety:** Integrated `java.util.Optional` to cleanly handle missing multi-value fields (like emails or phones) ensuring a safe, immutable display view without throwing exceptions.
+* **Dynamic Content Formatting:** Integrated the `ContactDisplay` interface and abstract `ContactDecorator` to allow users to dynamically apply non-destructive formatting (like ALL UPPERCASE) to the console output of contact details at runtime.
+* **Privacy Controls:** Implemented a concrete `MaskedEmailDecorator` that leverages RegEx parsing to proactively obscure the username portion of sensitive email fields from the console UI before printing, and demonstrated the ability to chain multiple formatters safely.
 
 ### UC6: Edit Contact
 * **Defensive State Modification:** Implemented safe setter wrappers in the service layer to validate input (e.g., null checks) before allowing mutations to the `Contact` objects, satisfying state protection requirements without relying on complex Memento patterns.
