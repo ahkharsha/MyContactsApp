@@ -25,24 +25,30 @@ public class ProfileUpdateCommandTest {
 
     @Test
     public void testUpdateNameCommand() throws ContactAppException {
+        System.out.println("Running Test: UpdateNameCommand updates user name");
         UserCommand command = new UpdateNameCommand(userService, testUser, "New Name");
         invoker.executeCommand(command);
         assertEquals("New Name", testUser.getFullName(), "User name should be updated via command.");
+        System.out.println("Test Passed.");
     }
 
     @Test
     public void testUpdateEmailCommand() throws ContactAppException {
+        System.out.println("Running Test: UpdateEmailCommand updates user email");
         String newUniqueEmail = "newcmd_" + System.currentTimeMillis() + "@example.com";
         UserCommand command = new UpdateEmailCommand(userService, testUser, newUniqueEmail);
         invoker.executeCommand(command);
         assertEquals(newUniqueEmail, testUser.getEmail(), "User email should be updated via command.");
+        System.out.println("Test Passed.");
     }
 
     @Test
     public void testChangePasswordCommand() throws ContactAppException {
+        System.out.println("Running Test: ChangePasswordCommand validates and updates password");
         UserCommand command = new ChangePasswordCommand(userService, testUser, "password123", "newpass456");
         invoker.executeCommand(command);
         assertDoesNotThrow(() -> userService.verifyCurrentPassword(testUser, "newpass456"), "New password should be valid.");
         assertThrows(ContactAppException.class, () -> userService.verifyCurrentPassword(testUser, "password123"), "Old password should be invalid.");
+        System.out.println("Test Passed.");
     }
 }

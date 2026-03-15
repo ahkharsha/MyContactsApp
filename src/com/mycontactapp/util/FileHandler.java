@@ -3,6 +3,8 @@ package com.mycontactapp.util;
 import com.mycontactapp.contact.Contact;
 import com.mycontactapp.contact.Organization;
 import com.mycontactapp.contact.Person;
+import com.mycontactapp.contact.builder.ContactBuilder;
+import com.mycontactapp.contact.factory.ContactFactory;
 import com.mycontactapp.user.builder.UserBuilder;
 import com.mycontactapp.user.factory.UserFactory;
 import com.mycontactapp.user.model.PremiumUser;
@@ -28,6 +30,7 @@ public class FileHandler {
     private static final String CONTACTS_FILE = DATA_DIR + "/contacts.txt";
     private static final String DELIMITER = "\\|"; 
     private static final UserFactory USER_FACTORY = new UserFactory();
+    private static final ContactFactory CONTACT_FACTORY = new ContactFactory();
 
     static {
         new File(DATA_DIR).mkdirs(); 
@@ -130,9 +133,23 @@ public class FileHandler {
                         isActive = Boolean.parseBoolean(p[10]);
                     }
 
-                    Contact c = p[0].equals("Person") 
-                        ? new Person(p[1], p[2], p[3], phones, emails, createdAt, p[7], viewCount, isActive)
-                        : new Organization(p[1], p[2], p[3], phones, emails, createdAt, p[7], viewCount, isActive);
+                    ContactBuilder builder = new ContactBuilder()
+                        .setContactId(p[1])
+                        .setUserId(p[2])
+                        .setName(p[3])
+                        .setPhoneNumbers(phones)
+                        .setEmailAddresses(emails)
+                        .setCreatedAt(createdAt)
+                        .setViewCount(viewCount)
+                        .setIsActive(isActive);
+                        
+                    if (p[0].equals("Person")) {
+                        builder.setRelationship(p[7]);
+                    } else {
+                        builder.setWebsite(p[7]);
+                    }
+
+                    Contact c = CONTACT_FACTORY.createContact(p[0], builder);
 
                     if (p.length >= 9 && !p[8].isEmpty()) {
                         for (String tagName : p[8].split(",")) {

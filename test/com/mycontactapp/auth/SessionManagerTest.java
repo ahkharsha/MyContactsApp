@@ -25,23 +25,28 @@ class SessionManagerTest {
 
     @Test
     void getInstanceReturnsSameSingletonObject() {
+        System.out.println("Running Test: SessionManager.getInstance() returns the same singleton object");
         SessionManager anotherReference = SessionManager.getInstance();
 
         assertSame(sessionManager, anotherReference);
+        System.out.println("Test Passed.");
     }
 
     @Test
     void loginStoresAuthenticatedUserInSession() {
+        System.out.println("Running Test: SessionManager.login() stores authenticated user");
         User user = new FreeUser("alice@example.com", "hashed-password", "Alice");
 
         sessionManager.login(user);
 
         assertTrue(sessionManager.isLoggedIn());
         assertSame(user, sessionManager.getCurrentUser());
+        System.out.println("Test Passed.");
     }
 
     @Test
     void logoutClearsAuthenticatedSessionState() {
+        System.out.println("Running Test: SessionManager.logout() clears session state");
         User user = new FreeUser("bob@example.com", "hashed-password", "Bob");
         sessionManager.login(user);
 
@@ -49,5 +54,6 @@ class SessionManagerTest {
 
         assertFalse(sessionManager.isLoggedIn());
         assertNull(sessionManager.getCurrentUser());
+        System.out.println("Test Passed.");
     }
 }

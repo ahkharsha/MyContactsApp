@@ -1,5 +1,7 @@
 package com.mycontactapp.contact;
 
+import com.mycontactapp.contact.builder.ContactBuilder;
+import com.mycontactapp.contact.factory.ContactFactory;
 import com.mycontactapp.exception.ContactAppException;
 import com.mycontactapp.tagging.Tag;
 import com.mycontactapp.user.model.User;
@@ -20,12 +22,14 @@ import java.util.stream.Collectors;
 public class ContactService {
     
     private final List<Contact> allContacts;
+    private final ContactFactory contactFactory;
 
     /**
      * Constructs a new ContactService and loads existing contacts from file.
      */
     public ContactService() {
         this.allContacts = FileHandler.loadContacts();
+        this.contactFactory = new ContactFactory();
     }
 
     /**
@@ -40,9 +44,14 @@ public class ContactService {
      */
     public Person createPersonContact(User owner, String name, String phone, String email, String relationship) throws ContactAppException {
         enforceContactLimit(owner);
-        Person person = new Person(owner.getUserId(), name, relationship);
-        if (!phone.isEmpty()) person.addPhoneNumber(phone);
-        if (!email.isEmpty()) person.addEmailAddress(email);
+        ContactBuilder builder = new ContactBuilder()
+            .setUserId(owner.getUserId())
+            .setName(name)
+            .setRelationship(relationship)
+            .addPhoneNumber(phone)
+            .addEmailAddress(email);
+
+        Person person = (Person) contactFactory.createContact("Person", builder);
         
         allContacts.add(person);
         FileHandler.saveContacts(allContacts); 
@@ -61,9 +70,14 @@ public class ContactService {
      */
     public Organization createOrganizationContact(User owner, String name, String phone, String email, String website) throws ContactAppException {
         enforceContactLimit(owner);
-        Organization org = new Organization(owner.getUserId(), name, website);
-        if (!phone.isEmpty()) org.addPhoneNumber(phone);
-        if (!email.isEmpty()) org.addEmailAddress(email);
+        ContactBuilder builder = new ContactBuilder()
+            .setUserId(owner.getUserId())
+            .setName(name)
+            .setWebsite(website)
+            .addPhoneNumber(phone)
+            .addEmailAddress(email);
+            
+        Organization org = (Organization) contactFactory.createContact("Organization", builder);
         
         allContacts.add(org);
         FileHandler.saveContacts(allContacts); 

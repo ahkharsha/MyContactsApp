@@ -18,8 +18,9 @@ A Java-based console application for contact management, designed using clean, s
 
 
 ### UC4: Create Contact
-* **Polymorphic Data Models:** Designed a hierarchical model containing an abstract `Contact` base class extended by `Person` and `Organization`, leveraging collections to store multi-value data like phone numbers and emails.
-* **Data Persistence:** Implemented a robust `FileHandler` utility to securely read and write Application state (Users and Contacts) to text files, enabling long-term storage and eliminating the need for repeated manual logins during testing.
+* **Factory-Based Object Instantiation:** Re-architected contact creation workflows to utilize a `ContactFactory`, which dynamically determines and instantiates the proper concrete subtypes (`Person` or `Organization`) based on runtime inputs, reducing tight coupling in the service layer.
+* **Builder-Driven Construction:** Introduced a `ContactBuilder` to collect, validate, and manage optional and multi-value contact properties (e.g., lists of phone numbers and emails) step-by-step before finalizing the objects natively inside the factory method.
+
 
 ### UC5: View Contact Details
 * **Polymorphic Formatting:** Bypassed complex Decorator patterns by utilizing overridden methods within the `Contact` hierarchy to dynamically generate specific console outputs for `Person` and `Organization` types.
