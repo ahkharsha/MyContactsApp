@@ -31,8 +31,8 @@ A Java-based console application for contact management, designed using clean, s
 * **Undo/Redo Flow Control:** Designed a `ModifyContactCommand` and integrated a generic `ContactEditInvoker` into the CLI event loop to encapsulate mutation logic, enabling users to seamlessly undo and redo multiple continuous data modifications without losing state.
 
 ### UC7: Delete Contact
-* **Lifecycle Management:** Implemented a Hard Delete strategy utilizing standard Java Collection `remove()` logic, avoiding the overhead of the Observer Pattern while maintaining strict synchronization with the File I/O system.
-* **Safe Deletion Flow:** Built a dedicated console flow that incorporates explicit user confirmation dialogs and `NumberFormatException` handling to prevent accidental data loss.
+* **Event-Driven Architecture:** Implemented the `ContactDeletionObserver` and `ContactDeletionSubject` interfaces to establish an Observer Pattern within the service layer, decoupling core deletion logic from secondary actions like system auditing (`AuditLogObserver`).
+* **Safe Deletion Strategies:** Supported both Soft Delete (which simply marks a contact as `isActive=false`, hiding it from the UI while preserving the data) and Hard Delete (which permanently strips the object from the underlying collection and invokes a file write), tied to an interactive CLI confirmation flow to prevent accidental data loss.
 
 ### UC8: Bulk Operations
 * **Collection Iteration:** Leveraged standard Java `for` loops and `List` structures to process bulk data operations, dynamically parsing comma-separated string inputs from the user to queue multiple objects for deletion in a single pass.

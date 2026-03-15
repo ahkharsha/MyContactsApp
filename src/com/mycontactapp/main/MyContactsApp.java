@@ -2,6 +2,7 @@ package com.mycontactapp.main;
 
 import com.mycontactapp.auth.SessionManager;
 import com.mycontactapp.contact.ContactService;
+import com.mycontactapp.contact.observer.AuditLogObserver;
 import com.mycontactapp.menu.AuthMenu;
 import com.mycontactapp.menu.ContactMenu;
 import com.mycontactapp.menu.OperationsMenu;
@@ -26,6 +27,11 @@ public class MyContactsApp {
     private static final SearchFilterService searchService = new SearchFilterService();
     private static final FilterService filterService = new FilterService();
     private static final SessionManager sessionManager = SessionManager.getInstance();
+
+    static {
+        // Register Observers
+        contactService.addObserver(new AuditLogObserver());
+    }
 
     /**
      * Application entry point.

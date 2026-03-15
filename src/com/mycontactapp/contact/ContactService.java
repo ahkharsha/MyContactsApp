@@ -2,10 +2,14 @@ package com.mycontactapp.contact;
 
 import com.mycontactapp.contact.builder.ContactBuilder;
 import com.mycontactapp.contact.factory.ContactFactory;
+import com.mycontactapp.contact.observer.ContactDeletionObserver;
+import com.mycontactapp.contact.observer.ContactDeletionSubject;
 import com.mycontactapp.exception.ContactAppException;
 import com.mycontactapp.tagging.Tag;
 import com.mycontactapp.user.model.User;
 import com.mycontactapp.util.FileHandler;
+
+import java.util.ArrayList;
 
 import java.util.HashSet;
 import java.util.List;
@@ -17,12 +21,13 @@ import java.util.stream.Collectors;
  * Manages core contact operations such as creation and data retrieval.
  *
  * @author Developer
- * @version 7.0
+ * @version 8.0
  */
-public class ContactService {
+public class ContactService implements ContactDeletionSubject {
     
     private final List<Contact> allContacts;
     private final ContactFactory contactFactory;
+    private final List<ContactDeletionObserver> observers;
 
     /**
      * Constructs a new ContactService and loads existing contacts from file.
@@ -30,6 +35,7 @@ public class ContactService {
     public ContactService() {
         this.allContacts = FileHandler.loadContacts();
         this.contactFactory = new ContactFactory();
+        this.observers = new ArrayList<>();
     }
 
     /**
@@ -170,14 +176,30 @@ public class ContactService {
     }
 
     /**
-     * Deletes a single contact (Soft Delete).
+     * Deletes a single contact, firing notifications to observers.
      * @param contact The contact to delete
+     * @param isHardDelete True completely removes the contact, False just marks as inactive (Soft Delete).
+     * @return true if successful
+     */
+    public boolean deleteContact(Contact contact, boolean isHardDelete) {
+        if (isHardDelete) {
+            allContacts.remove(contact);
+        } else {
+            contact.setActive(false);
+        }
+        
+        notifyObservers(contact, isHardDelete);
+        saveAllContacts();
+        return true;
+    }
+
+    /**
+     * Overloaded method for backwards compatibility with soft deletes by default.
+     * @param contact The contact to soft-delete
      * @return true if successful
      */
     public boolean deleteContact(Contact contact) {
-        contact.setActive(false);
-        saveAllContacts();
-        return true;
+        return deleteContact(contact, false);
     }
 
     /**
@@ -227,6 +249,27 @@ public class ContactService {
         long currentCount = getUserContacts(owner).size();
         if (currentCount >= owner.getContactLimit()) {
             throw new ContactAppException("Contact limit reached for your account type. Upgrade to Premium!");
+        }
+    }
+
+    // --- Observer Pattern Methods --- \\
+
+    @Override
+    public void addObserver(ContactDeletionObserver observer) {
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+        }
+    }
+
+    @Override
+    public void removeObserver(ContactDeletionObserver observer) {
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyObservers(Contact contact, boolean isHardDelete) {
+        for (ContactDeletionObserver observer : observers) {
+            observer.onContactDeleted(contact, isHardDelete);
         }
     }
 }

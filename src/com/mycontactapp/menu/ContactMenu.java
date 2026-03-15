@@ -198,16 +198,43 @@ public class ContactMenu {
         List<Contact> userContacts = contactService.getUserContacts(loggedInUser);
         if (userContacts.isEmpty()) { System.out.println("You have no contacts to delete."); return; }
         for (int i = 0; i < userContacts.size(); i++) { System.out.println("[" + (i + 1) + "] " + userContacts.get(i).getName()); }
-        System.out.print("\nEnter the number of the contact to permanently delete: ");
+        System.out.print("\nEnter the number of the contact to delete: ");
         try {
             int index = Integer.parseInt(scanner.nextLine()) - 1;
             if (index < 0 || index >= userContacts.size()) { System.out.println("Invalid selection."); return; }
             Contact selectedContact = userContacts.get(index);
-            System.out.print("WARNING: Are you sure you want to permanently delete '" + selectedContact.getName() + "'? (yes/no): ");
+            
+            System.out.println("\nSelected: " + selectedContact.getName());
+            System.out.println("1. Soft Delete (Archive/Hide from view)");
+            System.out.println("2. Hard Delete (Permanently Remove from Storage)");
+            System.out.println("3. Cancel");
+            System.out.print("Choose action: ");
+            String choice = scanner.nextLine();
+            
+            boolean isHardDelete = false;
+            
+            if (choice.equals("3")) {
+                System.out.println("Deletion cancelled.");
+                return;
+            } else if (choice.equals("2")) {
+                isHardDelete = true;
+                System.out.print("WARNING: Are you sure you want to PERMANENTLY delete '" + selectedContact.getName() + "'? (yes/no): ");
+            } else if (choice.equals("1")) {
+                System.out.print("Are you sure you want to softly delete '" + selectedContact.getName() + "'? (yes/no): ");
+            } else {
+                System.out.println("Invalid option. Cancelled.");
+                return;
+            }
+            
             if (scanner.nextLine().trim().equalsIgnoreCase("yes")) {
-                if (contactService.deleteContact(selectedContact)) System.out.println("Contact deleted successfully.");
-                else System.out.println("Error: Could not delete the contact.");
-            } else { System.out.println("Deletion cancelled."); }
+                if (contactService.deleteContact(selectedContact, isHardDelete)) {
+                    System.out.println("Contact deleted successfully.");
+                } else { 
+                    System.out.println("Error: Could not delete the contact.");
+                }
+            } else { 
+                System.out.println("Deletion cancelled."); 
+            }
         } catch (NumberFormatException e) { System.out.println("Input Error: Please enter a valid numeric value."); }
     }
 
